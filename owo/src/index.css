@@ -1,4 +1,4 @@
-body {
+/* body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -10,4 +10,219 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+} */
+:root {
+  --black-3: 
+rgba(0, 0, 0, 0.251);
+  --black-4: 
+rgba(0, 0, 0, 0.4);
+  --black-2: 
+rgba(0, 0, 0, 0.6);
+  --black: 
+rgba(0, 0, 0, 1);
+  --pine-green: 
+rgba(0, 114, 114, 1);
+  --shark: 
+rgba(40, 40, 40, 1);
+  --turquoise: 
+rgba(47, 217, 255, 1);
+  --chetwode-blue: 
+rgba(132, 121, 255, 1);
+  --chetwode-blue-2: 
+rgba(133, 130, 255, 1);
+  --bright-red: 
+rgba(177, 0, 0, 1);
+  --reef: 
+rgba(182, 255, 148, 1);
+  --mist-gray: 
+rgba(196, 196, 196, 1);
+  --yellow-sea: 
+rgba(246, 178, 2, 1);
+  --sundown: 
+rgba(255, 177, 177, 1);
+  --portafino: 
+rgba(255, 252, 178, 1);
+  --white: 
+rgba(255, 255, 255, 1);
+
+  --font-size-s: 12.5px;
+  --font-size-m: 15px;
+  --font-size-l: 16.5px;
+  --font-size-xl: 20px;
+  --font-size-xxl: 24px;
+  --font-size-xxxl: 36px;
+  --font-size-xxxxl: 48px;
+
+  --font-family-roboto_slab: "Roboto Slab";
+  --font-family-rye: "Rye";
+}
+
+
+
+.border-1px-black-2 {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--black-2);
+}
+.robotoslab-semi-bold-pine-green-24px {
+  color: var(--pine-green);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xxl);
+  font-weight: 600;
+  font-style: normal;
+}
+.robotoslab-normal-black-30px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: 30px;
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-medium-black-48px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xxxxl);
+  font-weight: 500;
+  font-style: normal;
+}
+.robotoslab-normal-pine-green-15px {
+  color: var(--pine-green);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-m);
+  font-weight: 400;
+  font-style: normal;
+}
+.border-1px-black {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--black);
+}
+.robotoslab-normal-black-20-6px-2 {
+  color: var(--black-4);
+  font-family: var(--font-family-roboto_slab);
+  font-size: 20.62545394897461px;
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-normal-shark-36px {
+  color: var(--shark);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xxxl);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-medium-pine-green-12-5px {
+  color: var(--pine-green);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-s);
+  font-weight: 500;
+  font-style: normal;
+}
+.robotoslab-normal-black-20px-2 {
+  color: var(--black-2);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xl);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-semi-bold-black-36px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xxxl);
+  font-weight: 600;
+  font-style: normal;
+}
+.border-1px-mist-gray {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--mist-gray);
+}
+.robotoslab-normal-pine-green-12-5px {
+  color: var(--pine-green);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-s);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-normal-black-36px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xxxl);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-normal-black-12-5px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-s);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-normal-black-16-5px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-l);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-normal-pine-green-24px {
+  color: var(--pine-green);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xxl);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-medium-pine-green-15px {
+  color: var(--pine-green);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-m);
+  font-weight: 500;
+  font-style: normal;
+}
+.robotoslab-normal-black-20-6px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: 20.62545394897461px;
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-normal-black-20px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xl);
+  font-weight: 400;
+  font-style: normal;
+}
+.rye-normal-bright-red-48px {
+  color: var(--bright-red);
+  font-family: var(--font-family-rye);
+  font-size: var(--font-size-xxxxl);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-normal-black-24px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xxl);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-normal-black-15px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-m);
+  font-weight: 400;
+  font-style: normal;
+}
+.robotoslab-semi-bold-black-24px {
+  color: var(--black);
+  font-family: var(--font-family-roboto_slab);
+  font-size: var(--font-size-xxl);
+  font-weight: 600;
+  font-style: normal;
+}
+.border-0-7px-mist-gray {
+  border-width: 0.7px;
+  border-style: solid;
+  border-color: var(--mist-gray);
 }
