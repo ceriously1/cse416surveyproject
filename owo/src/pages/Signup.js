@@ -19,7 +19,8 @@ function SignUp() {
                 method: 'Post', 
                 headers: {'Content-Type': 'application/json'}, 
                 body: JSON.stringify(signupData)
-            }).then(res => {return res.json()})
+            }
+            ).then(res => {return res.json()})
             .then(response => {
                 console.log(response);
             });
