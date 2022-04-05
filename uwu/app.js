@@ -6,19 +6,18 @@ const bodyParser = require('body-parser'); // parses requests
 const mongoose = require('mongoose');
 
 // requiring routes
-const signupRoutes = require('./api/routes/signup');
+const userRoutes = require('./api/routes/users.js');
 
 // connecting to cloud db
 mongoose.connect('mongodb+srv://firstuser:ajQDfI4Cz3sNN4G6@cluster0.9neui.mongodb.net/CSE416?retryWrites=true&w=majority');
 
 // misc. middleware
 app.use(morgan('dev'));
-//app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 // gives client access (cors "cross-origin-resource-sharing")
 app.use((req, res, next) => {
-    console.log("here");
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     if (req.method === 'Options') {
@@ -29,7 +28,7 @@ app.use((req, res, next) => {
 });
 
 // using backend routing
-app.use('/signup', signupRoutes);
+app.use('/signup', userRoutes);
 
 // handling errors
 app.use((req, res, next) => {

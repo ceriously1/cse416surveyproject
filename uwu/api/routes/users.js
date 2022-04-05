@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 // Models
 const User = require('../models/user.js');
 
-// Handling POST requests from frontend
+// Handling POST requests (sign-up) from frontend
 router.post('/', (req, res, next) => {
     User.findOne({$or: [{Username: req.body.username}, {email: req.body.email}]}).then(result => {
         console.log(req.body);
@@ -28,7 +28,11 @@ router.post('/', (req, res, next) => {
         else {
             // see log
             console.log('Username or email already exists');
-            res.status(200).json({msg: 'Username or email already exists'});
+            res.status(200).json({
+                msg: 'Username or email already exists',
+                username: req.body.username,
+                email: req.body.email
+            });
         }
     }).catch(err => console.log(err));
 });
