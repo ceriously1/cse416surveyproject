@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 });
 
 // using backend routing
-app.use('/signup', userRoutes);
+app.use('/user', userRoutes);
 
 // handling errors
 app.use((req, res, next) => {

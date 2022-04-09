@@ -14,7 +14,7 @@ function SignUp() {
             email: emailRef.current.value
         }
 
-        fetch('http://localhost:4000/signup', 
+        fetch('http://localhost:4000/user/signup', 
             {
                 method: 'Post', 
                 headers: {'Content-Type': 'application/json'}, 

@@ -12,7 +12,7 @@ function Login() {
             password: passwordRef.current.value
         }
 
-        fetch('http://localhost:4000/login', 
+        fetch('http://localhost:4000/user/login', 
             {
                 method: 'Post', 
                 headers: {'Content-Type': 'application/json'}, 
