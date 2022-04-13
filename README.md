@@ -8,3 +8,6 @@ Working on login next.
 
 npm start in /owo (client) or /uwu (server) to start.
 Might need to npm install everything to get things working.
+
+Eric Chan
+- Working on algorand stuff + balance
