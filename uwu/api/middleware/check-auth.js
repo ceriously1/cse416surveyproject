@@ -1,3 +1,5 @@
+// the exact same as the code provided in the readme backend tutorial
+
 const jwt = require('jsonwebtoken');
 
 // Add authentification to routes by doing:
@@ -12,6 +14,7 @@ module.exports = (req, res, next) => {
         const token = req.headers.authorization.split(" ")[1];
         const decoded = jwt.verify(token, "super_secret_omega_key");
         // creating new field in req so we can access the decoded token (which gives identifying information)
+        // req.userData will have req.userData.email and req.userData.username, which you can use to do user-specific things
         req.userData = decoded;
         next();
     } catch (error) {

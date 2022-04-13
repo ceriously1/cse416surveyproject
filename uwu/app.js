@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const userRoutes = require('./api/routes/users.js');
 
 // connecting to cloud db
+// ajQDfI4Cz3sNN4G6 is the hard-coded password to connect to the db
 mongoose.connect('mongodb+srv://firstuser:ajQDfI4Cz3sNN4G6@cluster0.9neui.mongodb.net/CSE416?retryWrites=true&w=majority');
 
 // misc. middleware

@@ -6,6 +6,7 @@ const userSchema = mongoose.Schema({
     // we'll need to implement email verification later
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    balance: { type: Number, required: true},
     profile_info: {pfp_path: String, stat1: Number, stat2: Number},
     completed_survey: [mongoose.Types.ObjectId],
     failed_survey: [mongoose.Types.ObjectId],

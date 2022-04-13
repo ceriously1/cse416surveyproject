@@ -1,8 +1,11 @@
+// Heavily based on code from the login part of the readme backend tutorial
+
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
+const checkAuth = require('../middleware/check-auth.js')
 
 // Model
 const User = require('../models/user.js');
@@ -36,6 +39,7 @@ router.post("/signup", (req, res, next) => {
                         username: req.body.username,
                         email: req.body.email,
                         password: hash,
+                        balance: 0,
                         profile_info: {pfp_path: null, stat1: 0, stat2: 0},
                         completed_survey: [],
                         failed_survey: [],
@@ -94,9 +98,33 @@ router.post('/login', (req, res, next) => {
                     token: token
                 });
             }
+            // "return" is not necessary here because it is the final res.function
             res.status(401).json({
                 message: "Authentification failed"
             });
+        })
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({
+            error: err
+        });
+    })
+})
+
+// handling GET request from /user/balance (displays balance, transaction history)
+router.get("/balance", checkAuth, (req, res, next) => {
+    User.find({email: req.userData.email}).exec().then(user => {
+        if (user.length < 1) {
+            return res.status(401).json({
+                message: 'User no longer exists.'
+            });
+        }
+        // TO-DO get transaction history (I would get the id (user[0]._id) and query the db for all transactions with the id sorted by date)
+
+        //////
+        res.status(200).json({
+            message: "Balance found.",
+            balance: user[0].balance
         })
     }).catch(err => {
         console.log(err);
