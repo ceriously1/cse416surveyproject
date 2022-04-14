@@ -9,9 +9,12 @@ import Progress from './pages/Progress.js';
 import Published from './pages/Published.js';
 import Signup from './pages/Signup.js';
 
+import NavigationBar from './components/layout/NavigationBar.js';
+
 function App() {
   return (
     <div>
+      <NavigationBar />
       <Routes>
         <Route path='/' element={<Home/>}/>
         <Route path='/account' element={<Account/>}/>

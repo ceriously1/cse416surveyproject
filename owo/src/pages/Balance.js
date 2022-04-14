@@ -5,7 +5,7 @@ import { useState, useEffect} from 'react';
 function Balance() {
     // sets isLoading to "true"
     const [isLoading, setIsLoading] = useState(true);
-    const [balance, setBalance] = useState(301);
+    const [balance, setBalance] = useState(0);
 
     // useEffect conditionally calls fetch so that it isn't called everytime a state is updated
     // the empty array at the end means that fetch will only be called when this page is first rendered
