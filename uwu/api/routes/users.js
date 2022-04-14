@@ -43,7 +43,6 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
 // handling GET request from /user/balance (displays balance, transaction history)
 // Note: you may get something like "websocket closed due to suspension", this is if you send a 304 I think
 router.get("/balance", (req, res, next) => {
-    console.log(req.session.passport.user);
     if (req.session.passport.user) {
         User.find({username: req.session.passport.user}).exec().then(user => {
             if (user.length < 1) {

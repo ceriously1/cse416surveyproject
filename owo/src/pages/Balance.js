@@ -1,6 +1,6 @@
 // see "getting started with fetching data" on the react tutorial
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect} from 'react';
 
 function Balance() {
     // sets isLoading to "true"
@@ -14,9 +14,8 @@ function Balance() {
     useEffect(() => {
         fetch('http://localhost:4000/user/balance',
             {
-                method: 'Get', 
+                method: 'Get',
                 credentials: 'include'
-                //headers: {'Authorization': `Bearer ${token}`}, // 
             }
             ).then(response => {
                 // .json() is a promise function, and promise functions need .then() to get their results
@@ -24,17 +23,23 @@ function Balance() {
             // data is response.json()
             }).then(data => {
                 setIsLoading(false);
+                console.log(data);
                 setBalance(data.balance);
             })
     }, []);
 
     if (isLoading) {
         return (
-            <div>Loading</div>
+            <div>Balance Page Loading</div>
         );
     }
 
-    return <div>Balance Page</div>;
+    return (
+        <section>
+            <h1>Balance Page</h1>
+            <p>Balance: {balance}</p>
+        </section>
+    );
 }
 
 export default Balance;

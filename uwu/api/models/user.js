@@ -6,7 +6,8 @@ const passportLocalMongoose = require('passport-local-mongoose');
 const User = new Schema({
     // passport-local mongoose will deal with the username and password (adds username, hash, salt fields)
     username: { type: String, required: true, unique: true },
-    email : { type: String, required: true, unique: true }
+    email: { type: String, required: true, unique: true },
+    balance: { type: Number, default: 0}
 });
 
 User.plugin(passportLocalMongoose);
