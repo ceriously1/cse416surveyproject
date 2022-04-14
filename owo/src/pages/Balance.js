@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 function Balance() {
     // sets isLoading to "true"
     const [isLoading, setIsLoading] = useState(true);
-    const [balance, setBalance] = useState(303);
+    const [balance, setBalance] = useState(301);
 
     // useEffect conditionally calls fetch so that it isn't called everytime a state is updated
     // the empty array at the end means that fetch will only be called when this page is first rendered
@@ -15,7 +15,8 @@ function Balance() {
         fetch('http://localhost:4000/user/balance',
             {
                 method: 'Get', 
-                headers: {'Authorization': `Bearer ${token}`}, // 
+                credentials: 'include'
+                //headers: {'Authorization': `Bearer ${token}`}, // 
             }
             ).then(response => {
                 // .json() is a promise function, and promise functions need .then() to get their results

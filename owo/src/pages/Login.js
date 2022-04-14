@@ -8,17 +8,21 @@ function Login() {
         event.preventDefault();
 
         const loginData = {
-            userLogin: userLoginRef.current.value,
+            username: userLoginRef.current.value,
             password: passwordRef.current.value
         }
 
         fetch('http://localhost:4000/user/login', 
             {
                 method: 'Post', 
-                headers: {'Content-Type': 'application/json'}, 
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true,
+                credentials: 'include',
                 body: JSON.stringify(loginData)
             }
-            ).then(res => {return res.json()})
+            ).then(res => {
+                return res.json()
+            })
             .then(response => {
                 console.log(response);
             });
