@@ -12,17 +12,14 @@ const url = "mongodb://localhost:27017/?readPreference=primary&directConnection=
 
 const port = process.env.PORT || 4000;
 
-// terminates the server on kill or keyboard interrupt
-process.on("SIGINT", close)
-process.on("SIGTERM", close)
+// terminates the server on kill or keyboard interrupt doesn't work
+process.on("SIGINT", close);
+process.on("SIGTERM", close);
 
-try {
-    await mongoose.connect(url);
+mongoose.connect(url, () => {
     if (debug) console.log("Connected to Database");
     app.listen(port, () => {if (debug) console.log(`Listening on port ${port}`)});
-} catch (err) {
-    console.log(err);
-}
+});
 
 app.get("/", (req, res) => {
     //TODO Take to homepage
