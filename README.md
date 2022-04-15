@@ -13,3 +13,7 @@ Backend:
 
 Eric Chan
 - Working on algorand stuff + balance
+
+James
+- Translated some of the schemas in js files
+- server.js is still a todo
