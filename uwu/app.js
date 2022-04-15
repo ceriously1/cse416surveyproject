@@ -13,7 +13,11 @@ const userRoutes = require('./api/routes/users.js');
 
 // connecting to cloud db
 // ajQDfI4Cz3sNN4G6 is the hard-coded password to connect to the db
-mongoose.connect('mongodb+srv://firstuser:ajQDfI4Cz3sNN4G6@cluster0.9neui.mongodb.net/CSE416?retryWrites=true&w=majority');
+
+//James: Moved connecting to server.js to ensure that the database is connected before trying to process requests
+//havent yet tested if this breaks anything in this file
+
+//mongoose.connect('mongodb+srv://firstuser:ajQDfI4Cz3sNN4G6@cluster0.9neui.mongodb.net/CSE416?retryWrites=true&w=majority');
 
 // https://dilshankelsen.com/user-authentication-with-passport-express/
 // using authentification middleware
