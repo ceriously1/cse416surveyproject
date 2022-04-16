@@ -21,10 +21,10 @@ function App() {
         <Route path='/account' element={<Account/>}/>
         <Route path='/user/balance' element={<Balance/>}/>
         <Route path='/user/login' element={<Login/>}/>
-        <Route path='/progress' element={<Progress/>}/>
+        <Route path='/survey/progress' element={<Progress/>}/>
+        <Route path='/survey/published' element={<Published/>}/>
         <Route path='/user/signup' element={<Signup/>}/>
         <Route path='/survey/builder' element={<Builder/>}/>
-        <Route path='/survey/in-progress/taking' element={<SurveyTaker/>}/>
       </Routes>
     </div>
   );

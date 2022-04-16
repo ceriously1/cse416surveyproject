@@ -2,12 +2,14 @@ const mongoose = require('mongoose');
 
 const surveySchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    name: {type: String, required: true},
-    description: {type: String, required: true},
+    publisher: {type: String, required: true},
+    title: {type: String, required: true},
+    description: {type: String},
     tags: [String],
-    payout: {type: Number, required: true},
-    publish_date: {type: Date, required: true},
-    deactivation_date: Date,
+    payout: {type: Number, default: 0},
+    answers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Answer' }]
+    //publish_date: {type: Date, required: true},
+    //deactivation_date: Date,
 }, {versionKey: false});
 
 module.exports = mongoose.model('Survey', surveySchema, 'Surveys');
