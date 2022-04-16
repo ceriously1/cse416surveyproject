@@ -12,7 +12,8 @@ Backend:
     checkAuth is deprecated. You can now do router('/path', (req, res) => {...}) without any middleware.
 
 Eric Chan
-- Working on algorand stuff + balance
+- Working on adding surveys
+- considering using smart contracts to send out payments (if someone could figure that out, that would be great)
 
 James
 - Translated some of the schemas in js files
