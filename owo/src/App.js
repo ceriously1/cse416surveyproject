@@ -8,6 +8,7 @@ import Login from './pages/Login.js';
 import Progress from './pages/Progress.js';
 import Published from './pages/Published.js';
 import Signup from './pages/Signup.js';
+import SurveyTaker from './pages/SurveyTaker';
 
 import NavigationBar from './components/layout/NavigationBar.js';
 
@@ -21,8 +22,9 @@ function App() {
         <Route path='/user/balance' element={<Balance/>}/>
         <Route path='/user/login' element={<Login/>}/>
         <Route path='/progress' element={<Progress/>}/>
-        <Route path='/published' element={<Published/>}/>
         <Route path='/user/signup' element={<Signup/>}/>
+        <Route path='/survey/builder' element={<Builder/>}/>
+        <Route path='/survey/in-progress/taking' element={<SurveyTaker/>}/>
       </Routes>
     </div>
   );

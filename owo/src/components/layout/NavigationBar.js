@@ -8,6 +8,8 @@ function NavigationBar() {
                 <li><Link to='/user/signup'>Sign Up</Link></li>
                 <li><Link to='/user/login'>Login</Link></li>
                 <li><Link to='/user/balance'>Balance</Link></li>
+                <li><Link to='/survey/builder'>Builder</Link></li>
+                <li><Link to='/survey/in-progress/taking'>Survey Taker</Link></li>
             </ul>
         </nav>
     </header>;
