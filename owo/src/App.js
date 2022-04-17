@@ -24,7 +24,7 @@ function App() {
         <Route path='/survey/progress' element={<Progress/>}/>
         <Route path='/survey/published' element={<Published/>}/>
         <Route path='/user/signup' element={<Signup/>}/>
-        <Route path='/survey/builder' element={<Builder/>}/>
+        <Route path='/survey/builder/:survey_id' element={<Builder/>}/>
       </Routes>
     </div>
   );

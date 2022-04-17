@@ -7,6 +7,8 @@ const surveySchema = new mongoose.Schema({
     description: {type: String},
     tags: [String],
     payout: {type: Number, default: 0},
+    questions: [String],
+    question_types: [],
     answers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Answer' }]
     //publish_date: {type: Date, required: true},
     //deactivation_date: Date,

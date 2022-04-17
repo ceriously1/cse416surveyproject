@@ -40,7 +40,7 @@ function Login() {
                 <label htmlFor='password'>Password</label>
                 <input type='password' required id='password' ref={passwordRef}></input>
             </div>
-            <div><button>Login Up</button></div>
+            <div><button>Login</button></div>
         </form>
     </div>
     );

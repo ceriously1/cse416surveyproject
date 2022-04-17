@@ -4,12 +4,12 @@ import SurveyList from '../components/surveys/SurveyList.js';
 function Progress() {
     
     const [isLoading, setIsLoading] = useState(true);
-    // 0 for surveys in progress, 1 for survey history
+    // surveyClass: 0 for surveys in progress, 1 for survey history
     // page is an array of surveys
-    const [surveyClass, setSurveyClass] = setState(0);
-    const [pageIndex, setPageIndex] = setState(0);
-    const [numSurveys, setNumSurveys] = setState(0);
-    const [page, setPage] = setState([]);
+    //const [surveyClass, setSurveyClass] = useState(0);
+    const [pageIndex, setPageIndex] = useState(0);
+    const [numSurveys, setNumSurveys] = useState(0);
+    const [page, setPage] = useState([]);
     const pageLength = 20;
 
 
@@ -19,7 +19,7 @@ function Progress() {
             method: 'Get',
             credentials: 'include',
             body: {
-                surveyClass: surveyClass,
+                //surveyClass: surveyClass,
                 pageIndex: pageIndex,
                 pageLength: pageLength
             }
@@ -28,7 +28,7 @@ function Progress() {
             return res.json()
         })
         .then(data => {
-            setIsLoading(False);
+            setIsLoading(false);
             // data = {message, page, numSurveys}
             console.log(data.message);
             setPage(data.page);  // we need to put this in useEffect to prevent infinite loop
@@ -44,7 +44,7 @@ function Progress() {
     
     return <section>
         <div>
-            <SurveyList page = {page} surveyClass = {surveyClass}/>
+            <SurveyList page = {page}/>
         </div>
         <div>
             <ul>

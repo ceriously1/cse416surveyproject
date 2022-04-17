@@ -14,4 +14,4 @@ function SurveyItem(props) {
     </li>
 }
 
-export default Question;
+export default SurveyItem;

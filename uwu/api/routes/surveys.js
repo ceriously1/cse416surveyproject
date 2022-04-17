@@ -5,7 +5,7 @@ const router = require('express').Router();
 router.get('/progress', (req,res) => {
     Answer.find({user: req.session.passport.user})
         .select('_id') // selecting nothing from answers besides id
-        .populate('survey', '_id title description tags payout')  // utitlize the reference in the Answer model to get fields from the corresponding surveys
+        .populate('survey', '_id title description tags payout')  // I believe that populate replaces each 'survey: id' in each answer with 'survey: {..}'
         .exec()
         .then(answers => {
             // an answer in answers will have the form {_id, survey: {_id, title, description, tags, payout}}

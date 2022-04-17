@@ -45,7 +45,7 @@ function SurveyTaker() {
             return response.json();
         // data is response.json()
         }).then(data => {
-            setIsLoading(False);
+            setIsLoading(false);
             setPage(data.page);
             setNumPages(data.numPages);
         })
