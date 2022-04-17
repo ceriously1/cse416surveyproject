@@ -1,17 +1,16 @@
-import Question from './Question.js';
+import BQuestion from './BQuestion.js';
 
-function Page(props) {
+function BPage(props) {
     return <ul>
         {props.page.map((question) => (
-            <Question 
+            <BQuestion 
                 key={question.id}
                 type={question.type} 
                 text={question.text} 
                 params={question.params}
-                answer={question.answer}
             />
         ))}
     </ul>
 }
 
-export default Page;
+export default BPage;

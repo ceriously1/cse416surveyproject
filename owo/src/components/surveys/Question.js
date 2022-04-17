@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 
 function Question(props) {
-    // question prop coming in will have the form props = {type, question_text, answer}
+    // question prop coming in will have the form props = {type, text, params, answer}
     const answerRef = useRef();
 
     function changeAnswer(event) {
@@ -10,13 +10,12 @@ function Question(props) {
     };
 
     return <li>
-        <div>
-            <h2>{props.question_text}</h2>
-        </div>
         <form onChange={changeAnswer}>
             <div>
-                <label htmlFor='answer'>User</label>
-                <input type={props.type} required id='answer' ref={answerRef}></input>
+                <label htmlFor='answer'>{props.text}</label>
+                <input type={props.type} required id='answer' ref={answerRef}>
+
+                </input>
             </div>
         </form>
     </li>

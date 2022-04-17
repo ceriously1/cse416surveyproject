@@ -5,9 +5,11 @@ const passportLocalMongoose = require('passport-local-mongoose');
 
 const User = new Schema({
     // passport-local mongoose will deal with the username and password (adds username, hash, salt fields)
+    _id: mongoose.Schema.Types.ObjectId,
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    balance: { type: Number, default: 0}
+    balance: { type: Number, default: 0},
+    answers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Answer'}]
 });
 
 User.plugin(passportLocalMongoose);

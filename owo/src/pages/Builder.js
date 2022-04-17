@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import BPage from '../components/surveys/BPage.js';
 
 function Builder() {
     const {survey_id} = useParams();
@@ -85,7 +86,7 @@ function Builder() {
     // this conditional rendering is made particularly easy by the fact that we know exactly how many pages there are
     return <section>
         <div>
-            <Page page = {pages[pageIndex]} />
+            <BPage page = {pages[pageIndex]} />
         </div>
         <div>
             <ul>

@@ -2,12 +2,22 @@ const Answer = require('../models/answer.js');
 const Survey = require('../models/survey.js');
 const router = require('express').Router();
 
+router.get('/builder/:survey_id', (req,res) => {
+
+});
+
+
 router.get('/progress', (req,res) => {
     Answer.find({user: req.session.passport.user})
         .select('_id') // selecting nothing from answers besides id
         .populate('survey', '_id title description tags payout')  // I believe that populate replaces each 'survey: id' in each answer with 'survey: {..}'
         .exec()
         .then(answers => {
+            if (answers.length < 1) {
+                return res.status(404).json({
+                    message: 'User has not answered any surveys.'
+                });
+            }
             // an answer in answers will have the form {_id, survey: {_id, title, description, tags, payout}}
             const bottom_slice = (req.pageIndex*req.pageLength > 0) ? req.pageIndex*req.pageLength : 0;
             const top_slice = ((req.pageIndex+1)*req.pageLength < answers.length) ? (req.pageIndex+1)*req.pageLength : answers.length;

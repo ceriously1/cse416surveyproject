@@ -10,6 +10,7 @@ const MongoStore = require('connect-mongo');
 
 // requiring routes
 const userRoutes = require('./api/routes/users.js');
+const surveyRoutes = require('./api/routes/surveys.js');
 
 // connecting to cloud db
 // ajQDfI4Cz3sNN4G6 is the hard-coded password to connect to the db
@@ -62,6 +63,7 @@ app.use((req, res, next) => {
 
 // using backend routing
 app.use('/user', userRoutes);
+app.use('/survey', surveyRoutes);
 
 // handling errors
 app.use((req, res, next) => {
