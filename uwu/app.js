@@ -31,7 +31,7 @@ app.use(session({
     secret: '123-456-789',
     saveUninitialized: false,
     resave: false,
-    cookie: { maxAge: 1800000, sameSite: 'none' },
+    cookie: { maxAge: 3600000, sameSite: 'none' },
     store: MongoStore.create({ mongoUrl: 'mongodb+srv://firstuser:ajQDfI4Cz3sNN4G6@cluster0.9neui.mongodb.net/CSE416?retryWrites=true&w=majority' })
 }));
 app.use(passport.initialize());

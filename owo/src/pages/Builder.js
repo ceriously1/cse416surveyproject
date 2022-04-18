@@ -28,7 +28,7 @@ function Builder() {
         // })
         // .then(response => {
         //     setIsLoading(false);
-        //     setSurveyJSON(response.survey);
+        //     setSurveyJSON(response.surveyJSON);
         //     setSurveyParams(response.surveyParams);
         // });
     }, [survey_id]);
@@ -255,16 +255,19 @@ function Builder() {
     }
 
     function saveSurvey() {
+        const full_json = {
+            surveyJSON: survey.toJSON(),
+            surveyParams: surveyParams
+        };
+
         // if survey_id is 0, we will create a new survey
         fetch(`http://localhost:4000/survey/builder/${survey_id}`, 
             {
                 method: 'Post', 
                 headers: {'Content-Type': 'application/json'},
+                withCredentials: true,
                 credentials: 'include',
-                body: {
-                    survey: JSON.stringify(survey.toJSON()),
-                    surveyParams: JSON.stringify(surveyParams)
-                }
+                body: JSON.stringify(full_json)
             }
             ).then(res => {
                 return res.json()
@@ -297,7 +300,7 @@ function Builder() {
         </div>
         <div>
             <button onClick={() => {editSurveyParams()}}>Edit Survey Attributes</button>
-            <button onClick={() => {saveSurvey()}}></button>
+            <button onClick={() => {saveSurvey()}}>Save Survey</button>
         </div>
     </div>;
 }
