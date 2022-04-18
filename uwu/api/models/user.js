@@ -9,7 +9,8 @@ const User = new Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     balance: { type: Number, default: 0},
-    answers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Answer'}]
+    answers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Answer'}],
+    surveys: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Survey'}]
 });
 
 User.plugin(passportLocalMongoose);
