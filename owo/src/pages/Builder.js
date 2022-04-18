@@ -93,13 +93,15 @@ function Builder() {
         </div>
     };
 
-            <option value='Goo'>Goo</option>
-            <option value='Wobble'>Wobble</option>
     if (editingSurveyParams) {
         const pSurvey = new Model();
+        pSurvey.showNavigationButtons = false;
+        const pPage = pSurvey.addNewPage();
         const titleQuestion = pPage.addNewQuestion('text');
         titleQuestion.title = 'Survey Title';
         titleQuestion.isRequired = true;
+        const descQuestion = pPage.addNewQuestion('text');
+        descQuestion.title = 'Decription';
         const tagQuestion = pPage.addNewQuestion('dropdown');
         tagQuestion.title = 'Tag 1';
         tagQuestion.choices = ['Garble', 'Goo', 'Wobble', 'Squabble'];
