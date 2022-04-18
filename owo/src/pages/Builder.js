@@ -29,8 +29,10 @@ function Builder() {
         .then(response => {
             setIsLoading(false);
             console.log(response.message);
-            setSurveyJSON(response.surveyJSON);
-            setSurveyParams(response.surveyParams);
+            if (survey_id !== '0') {
+                setSurveyJSON(response.surveyJSON);
+                setSurveyParams(response.surveyParams);
+            }
         });
     }, [survey_id]);
     // question: does useEffect wait for everything inside of it to finish before continuing?

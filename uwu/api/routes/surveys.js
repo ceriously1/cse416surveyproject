@@ -10,19 +10,22 @@ router.get('/builder/:survey_id', (req,res) => {
         .exec()
         .then(user => {
             if (!user) return res.status(404).json({message: 'User not found.'});
-            console.log(req.params.survey_id);
-            const survey_id = mongoose.Types.ObjectId(req.params.survey_id);
-            if (user.surveys.includes(survey_id)) {
-                Survey.findById(survey_id).exec().then(survey => {
-                    return res.status(201).json({
-                        message: 'Survey found!',
-                        surveyJSON: survey.surveyJSON,
-                        surveyParams: survey.surveyParams
-                    });
-                });
+            if (req.params.survey_id === '0') {
+                return res.status(201).json({message: 'Doing nothing because of default behavior on client side.'});
             } else {
-                return res.status(401).json({message: 'User cannot access survey.'});
-            }
+                const survey_id = mongoose.Types.ObjectId(req.params.survey_id);
+                if (user.surveys_created.includes(survey_id)) {
+                    Survey.findById(survey_id).exec().then(survey => {
+                        return res.status(201).json({
+                            message: 'Survey found!',
+                            surveyJSON: survey.surveyJSON,
+                            surveyParams: survey.surveyParams
+                        });
+                    });
+                } else {
+                    return res.status(401).json({message: 'User cannot access survey.'});
+                }
+            } 
         }).catch(err =>{
             console.log(err);
             res.status(500).json({
@@ -48,11 +51,13 @@ router.post('/builder/:survey_id', (req,res) => {
                 const survey = new Survey({
                     _id: new mongoose.Types.ObjectId(),
                     publisher: user._id,
+                    published: false,
+                    deactivated: false,
                     surveyJSON: req.body.surveyJSON,
                     surveyParams: req.body.surveyParams
                 });
                 survey.save().then(result => {
-                    user.surveys.push(survey._id);
+                    user.surveys_created.push(survey._id);
                     user.save().then(result2 => {
                         return res.status(201).json({message: 'New survey successfully created.'});
                     });
@@ -61,7 +66,7 @@ router.post('/builder/:survey_id', (req,res) => {
             } else {
                 // you need to convert url parameter survey_id into mongoose objectid
                 const survey_id = mongoose.Types.ObjectId(req.params.survey_id);
-                if (user.surveys.includes(survey_id)) {
+                if (user.surveys_created.includes(survey_id)) {
                     Survey.findById(survey_id).exec().then(survey => {
                         survey.surveyJSON = req.body.surveyJSON;
                         survey.surveyParams =req.body.surveyParams;
@@ -81,29 +86,56 @@ router.post('/builder/:survey_id', (req,res) => {
         });
 });
 
-
-router.get('/progress', (req,res) => {
-    Answer.find({user: req.session.passport.user})
-        .select('_id') // selecting nothing from answers besides id
-        .populate('survey', '_id title description tags payout')  // I believe that populate replaces each 'survey: id' in each answer with 'survey: {..}'
+router.get('/list/:survey_status', (req, res) => {
+    if (typeof req.session.passport === 'undefined') res.status(401).json({message: 'Session expired. Log back in.'});
+    const surveyStatus = req.params.survey_status;
+    // 'Query conditions and other options': https://mongoosejs.com/docs/populate.html
+    let options = {
+        path: '',
+        match: {}
+    };
+    if (surveyStatus === 'active') {
+        options.path = 'surveys_created';
+        options.match = {published: {$eq: true}, deactivated: {$eq: false}};
+    }
+    else if (surveyStatus === 'inactive') {
+        options.path = 'surveys_created';
+        options.match = {published: {$eq: true}, deactivated: {$eq: true}};
+    }
+    else if (surveyStatus === 'building') {
+        options.path = 'surveys_created';
+        options.match = {published: {$eq: false}, deactivated: {$eq: false}};
+    }
+    else if (surveyStatus === 'in-progress') {
+        options.path = 'answers';
+        options.match = {complete: {$eq: false}};
+        options.select = 'survey';
+    }
+    else if (surveyStatus === 'history') {
+        options.path = 'answers';
+        options.match = {complete: {$eq: true}};
+        options.select = 'survey';
+    }
+    else {
+        console.log(surveyStatus);
+        return res.status(400).json({message: 'Invalid survey status.'});
+    }
+    User.findOne({username: req.session.passport.user})
+        .select('_id')
+        .populate(options)
         .exec()
-        .then(answers => {
-            if (answers.length < 1) {
-                return res.status(404).json({
-                    message: 'User has not answered any surveys.'
+        .then(user => {
+            if (!user) return res.status(404).json({message: 'User not found.'});
+            if (surveyStatus === 'active' || surveyStatus === 'inactive' || surveyStatus === 'building') {
+                res.status(201).json({
+                    message: 'Surveys found.',
+                    // should be an array of survey objects
+                    surveys: user.surveys_created
                 });
             }
-            // an answer in answers will have the form {_id, survey: {_id, title, description, tags, payout}}
-            const bottom_slice = (req.pageIndex*req.pageLength > 0) ? req.pageIndex*req.pageLength : 0;
-            const top_slice = ((req.pageIndex+1)*req.pageLength < answers.length) ? (req.pageIndex+1)*req.pageLength : answers.length;
-            const surveys = answers.map(answer => answer.survey)
-                .sort((a, b) => {a.title < b.title})
-                .slice(bottom_slice, top_slice);
-            res.status(200).json({
-                message: 'Survey query successful',
-                numSurveys: answers.length,
-                page: surveys
-            });
+            if (surveyStatus === 'in-progress' || surveyStatus === 'history') {
+                // user.answers.populate()
+            }
         }).catch(err =>{
             console.log(err);
             res.status(500).json({
