@@ -5,7 +5,30 @@ const router = require('express').Router();
 const mongoose = require('mongoose');
 
 router.get('/builder/:survey_id', (req,res) => {
-    
+    if (typeof req.session.passport === 'undefined') res.status(401).json({message: 'Session expired. Log back in.'})
+    User.findOne({username: req.session.passport.user})
+        .exec()
+        .then(user => {
+            if (!user) return res.status(404).json({message: 'User not found.'});
+            console.log(req.params.survey_id);
+            const survey_id = mongoose.Types.ObjectId(req.params.survey_id);
+            if (user.surveys.includes(survey_id)) {
+                Survey.findById(survey_id).exec().then(survey => {
+                    return res.status(201).json({
+                        message: 'Survey found!',
+                        surveyJSON: survey.surveyJSON,
+                        surveyParams: survey.surveyParams
+                    });
+                });
+            } else {
+                return res.status(401).json({message: 'User cannot access survey.'});
+            }
+        }).catch(err =>{
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
+        });
 });
 
 router.post('/builder/:survey_id', (req,res) => {
@@ -18,7 +41,7 @@ router.post('/builder/:survey_id', (req,res) => {
     User.findOne({username: req.session.passport.user})
         .exec()
         .then(user => {
-            if (!user) res.status(404).json({message: 'User not found.'});
+            if (!user) return res.status(404).json({message: 'User not found.'});
             // surveys will automatically be [] if there is no survey field
             // 2. If the survey_id parameter is 0, construct and save a new survey, add new survey_id to user
             if (req.params.survey_id === '0') {

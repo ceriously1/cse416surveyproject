@@ -17,25 +17,30 @@ function Builder() {
     const [editingSurveyParams, setEditingSurveyParams] = useState(false);
 
     useEffect(() => {
-        setIsLoading(false); // comment this out when connected to db
-        // fetch(`http://localhost:4000/survey/builder/:${survey_id}`, 
-        // {
-        //     method: 'Get', 
-        //     credentials: 'include',
-        // }
-        // ).then(res => {
-        //     return res.json()
-        // })
-        // .then(response => {
-        //     setIsLoading(false);
-        //     setSurveyJSON(response.surveyJSON);
-        //     setSurveyParams(response.surveyParams);
-        // });
+        // setIsLoading(false); // comment this out when connected to db
+        fetch(`http://localhost:4000/survey/builder/${survey_id}`, 
+        {
+            method: 'Get', 
+            credentials: 'include',
+        }
+        ).then(res => {
+            return res.json()
+        })
+        .then(response => {
+            setIsLoading(false);
+            console.log(response.message);
+            setSurveyJSON(response.surveyJSON);
+            setSurveyParams(response.surveyParams);
+        });
     }, [survey_id]);
     // question: does useEffect wait for everything inside of it to finish before continuing?
     // the subsequent code assumes so
 
     if (isLoading) return <div>Builder Loading</div>;
+
+    if (typeof surveyJSON === 'undefined' || typeof surveyParams === 'undefined') {
+        return <div>Cannot access survey.</div>
+    }
 
     // This is a long block of code cause I don't want to deal with props and states in children
     if (addingQuestion) {
