@@ -11,13 +11,13 @@ function Builder() {
     const {survey_id} = useParams();
     const [isLoading, setIsLoading] = useState(true);   // ensures that we don't attempt to access anything we're not ready to access
     const [surveyJSON, setSurveyJSON] = useState({});  // there might be a better way of storing the result from the GET request
-    const [surveyParams, setSurveyParams] = useState({title: 'Placeholder Title', description: 'No Description', tags:[], payout: 0});
+    const [surveyParams, setSurveyParams] = useState({title: 'Placeholder Title', description: 'No Description', tags:[], payout: 0, reserved: 0});
     const [pageIndex, setPageIndex] = useState(0);
     const [addingQuestion, setAddingQuestion] = useState(false);
     const [editingSurveyParams, setEditingSurveyParams] = useState(false);
 
     useEffect(() => {
-        setIsLoading(false);
+        setIsLoading(false); // comment this out when connected to db
         // fetch(`http://localhost:4000/survey/builder/:${survey_id}`, 
         // {
         //     method: 'Get', 
@@ -57,17 +57,21 @@ function Builder() {
         for (let i = 0; i < 6; i++) {
             choices.addItem(`choice${i}`, `Choice ${i+1}`);
         }
+        const reqQuestion = qPage.addNewQuestion('checkbox', 'isRequired');
+        reqQuestion.title = 'Required?';
+        reqQuestion.choices = ['Yes'];
         // saves question being added
         function saveQuestion() {
             // can edit surveyJSON and surveyParams here! (I'm not going to use this as a component)
             const data = qSurvey.getPlainData();
+            console.log(data);
             if (typeof data[0].value === 'undefined' || typeof data[1].value === 'undefined') {
                 console.log('Required entries not filled.');
                 return;
             }
             if (data[1].value === 'dropdown' || data[1].value === 'checkbox') {
                 // https://stackoverflow.com/questions/6756104/get-size-of-json-object
-                if (typeof data[2].value === 'undefined' || Object.keys(data[2].value).length < 2) {
+                if (typeof data[2].value === 'undefined' || (Object.keys(data[2].value).length < 2 && data[1].value === 'dropdown')) {
                     console.log('Not enough choices.');
                     return;
                 }
@@ -80,6 +84,9 @@ function Builder() {
             if (data[1].value === 'dropdown' || data[1].value === 'checkbox') {
                 question.choices = Object.values(data[2].value);
             }
+            if (data[3].value.length > 0) question.isRequired = true;
+            else question.isRequired = false;
+            console.log(data[3].value);
             setSurveyJSON(survey.toJSON());
             setAddingQuestion(false);
         }
@@ -108,6 +115,9 @@ function Builder() {
         const payQuestion = pPage.addNewQuestion('text');
         payQuestion.inputType = 'number';
         payQuestion.title = 'Payout (microAlgos)';
+        const reservedQuestion = pPage.addNewQuestion('text');
+        reservedQuestion.inputType = 'number';
+        reservedQuestion.title = 'Reserved (microAlgos)';
         function saveParams() {
             const data = pSurvey.getPlainData();
             if (data[0].value === null) {
@@ -121,12 +131,20 @@ function Builder() {
                 console.log('Payout must be positive or 0.');
                 return;
             }
+            if (data[4].value === null) {
+                data[4].value = 0;
+            }
+            if (data[4].value < 0) {
+                console.log('Reserved microAlgos must be positive or 0.');
+                return;
+            }
             const params = {
                 title: data[0].value,
                 // does the following short-circuit?
                 description: ((data[1].value === null) ? 'No Description' : data[1].value),
                 tags: ((typeof data[2].value === 'undefined') ? [] : [data[2].value]),
-                payout: data[3].value
+                payout: data[3].value,
+                reserved: data[4].value
             }
             setSurveyParams(params);
             setEditingSurveyParams(false);
@@ -266,7 +284,8 @@ function Builder() {
         <div>Survey Title: {surveyParams.title}</div>
         <div>Description: {surveyParams.description}</div>
         <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>
-        <div>Payout: {surveyParams.payout}</div>
+        <div>Payout: {surveyParams.payout} microAlgos</div>
+        <div>Reserved: {surveyParams.reserved} microAlgos</div>
         <div><Survey model={survey}/></div>
         <div>
             <button onClick={() => {survey.prevPage()}}>Prev Page</button>
