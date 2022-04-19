@@ -1,13 +1,12 @@
-const Response = require('../models/response.js');
+const Answer = require('../models/answer.js');
 const User = require('../models/user.js');
 const Survey = require('../models/survey.js');
 const router = require('express').Router();
 const mongoose = require('mongoose');
-const surveyjs = require('survey-react-ui');
-const _ = require('lodash');
+const { query } = require('express');
 
 router.get('/builder/:survey_id', (req,res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.'})
+    if (typeof req.session.passport === 'undefined') res.status(401).json({message: 'Session expired. Log back in.'})
     User.findOne({username: req.session.passport.user})
         .exec()
         .then(user => {
@@ -42,9 +41,8 @@ router.post('/builder/:survey_id', (req,res) => {
         return res.status(400).json({message: 'No pages in survey.'});
     }
     // 1. Find the user_id
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.'})
-    const username = req.session.passport.user;
-    User.findOne({username: username})
+    if (typeof req.session.passport === 'undefined') res.status(401).json({message: 'Session expired. Log back in.'})
+    User.findOne({username: req.session.passport.user})
         .exec()
         .then(user => {
             if (!user) return res.status(404).json({message: 'User not found.'});
@@ -54,7 +52,6 @@ router.post('/builder/:survey_id', (req,res) => {
                 const survey = new Survey({
                     _id: new mongoose.Types.ObjectId(),
                     publisher: user._id,
-                    publisherName: username,
                     published: false,
                     deactivated: false,
                     surveyJSON: req.body.surveyJSON,
@@ -63,25 +60,20 @@ router.post('/builder/:survey_id', (req,res) => {
                 survey.save().then(result => {
                     user.surveys_created.push(survey._id);
                     user.save().then(result2 => {
-                        return res.status(201).json({message: 'New survey successfully created.', survey_id: survey._id});
+                        return res.status(201).json({message: 'New survey successfully created.'});
                     });
                 });
             // 3. Else check if the survey was created by the user and update the survey
             } else {
-                // do you need to convert url parameter survey_id into mongoose objectid?
+                // you need to convert url parameter survey_id into mongoose objectid
                 const survey_id = mongoose.Types.ObjectId(req.params.survey_id);
                 if (user.surveys_created.includes(survey_id)) {
                     Survey.findById(survey_id).exec().then(survey => {
-                        if (survey.published === false && survey.deactivated === false) {
-                            survey.surveyJSON = req.body.surveyJSON;
-                            survey.surveyParams =req.body.surveyParams;
-                            survey.save().then(result => {
-                                return res.status(201).json({message: 'Survey updated.'});
-                            });
-                        }
-                        else {
-                            return res.status.apply(401).json({message: 'Can only edit survey being built.'});
-                        }
+                        survey.surveyJSON = req.body.surveyJSON;
+                        survey.surveyParams =req.body.surveyParams;
+                        survey.save().then(result => {
+                            return res.status(201).json({message: 'Survey updated.'});
+                        });
                     });
                 } else {
                     return res.status(401).json({message: 'User cannot access survey.'});
@@ -95,42 +87,8 @@ router.post('/builder/:survey_id', (req,res) => {
         });
 });
 
-router.post('/published/delete/:survey_id', (req, res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({success: false, message: 'Session expired. Log back in.'});
-    const username = req.session.passport.user;
-    User.findOne({username: username})
-        .select('surveys_created')
-        .exec()
-        .then(user => {
-            if (!user) return res.status(404).json({success: false, message: 'User not found.'});
-            if (user.surveys_created.includes(req.params.survey_id)) {
-                Survey.findById(req.params.survey_id)
-                    .select('published deactivated')
-                    .exec()
-                    .then(survey => {
-                        if (survey.published === false && survey.deactivated === false) {
-                            Survey.findByIdAndDelete(survey._id)
-                                .exec().then(() => {
-                                    return res.status(201).json({success: true, message: 'Survey deleted.'});
-                                });
-                        } else {
-                            return res.status(401).json({success: false, message: 'Can only delete survey being built.'});
-                        }
-                    });
-            } else {
-                return res.status(401).json({success: false, message: 'Not allowed to delete the survey.'});
-            }
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
-});
-
 router.get('/list/:survey_status', (req, res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.'});
+    if (typeof req.session.passport === 'undefined') res.status(401).json({message: 'Session expired. Log back in.'});
     const surveyStatus = req.params.survey_status;
     // 'Query conditions and other options': https://mongoosejs.com/docs/populate.html
     let options = {
@@ -150,12 +108,12 @@ router.get('/list/:survey_status', (req, res) => {
         options.match = {published: {$eq: false}, deactivated: {$eq: false}};
     }
     else if (surveyStatus === 'in-progress') {
-        options.path = 'responses';
+        options.path = 'answers';
         options.match = {complete: {$eq: false}};
         options.select = 'survey';
     }
     else if (surveyStatus === 'history') {
-        options.path = 'responses';
+        options.path = 'answers';
         options.match = {complete: {$eq: true}};
         options.select = 'survey';
     }
@@ -177,7 +135,7 @@ router.get('/list/:survey_status', (req, res) => {
                 });
             }
             if (surveyStatus === 'in-progress' || surveyStatus === 'history') {
-                // 
+                // user.answers.populate()
             }
         }).catch(err =>{
             console.log(err);
@@ -214,7 +172,7 @@ router.get('/search/:query?', (req, res) => {
 });
 
 router.post('/activate/:survey_id', (req, res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.'})
+    if (typeof req.session.passport === 'undefined') res.status(401).json({message: 'Session expired. Log back in.'})
     User.findOne({username: req.session.passport.user})
         .exec()
         .then(user => {
@@ -241,101 +199,6 @@ router.post('/activate/:survey_id', (req, res) => {
                     });
                 }
             });
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
-});
-
-router.get('/taker/:survey_id', (req, res) => {
-    // the conditions for allowing a user to take a survey:
-    // the user does not have to be a publisher
-    // whether or not there is enough reserve only affects whether or not the user will get a warning on (attempted) completion
-    // the survey has to be active (published, not deactivated)
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Please log in.', success: false});
-    const username = req.session.passport.user;
-    Survey.findOne({$and:[{_id: req.params.survey_id}, {published: true}, {deactivated: false}]})
-        .select('published deactivated surveyJSON surveyParams')
-        .exec()
-        .then(survey => {
-            if (!survey) return res.status(404).json({success: false, message: 'Survey not found'});
-            if (survey.published !== true || survey.deactivated !== false) return res.status(400).json({success: false, message: 'Survey is not active.'});
-            User.findOne({username: username})
-                .select('')
-                .exec()
-                .then(user => {
-                    if (!user) return res.status(404).json({success: false, message: 'User not found.'});
-                    Response.findOne({$and:[{user:user._id}, {survey:survey._id}]})
-                        .then(response => {
-                            if (!response) return res.status(200).json({success: true, surveyJSON: survey.surveyJSON, surveyParams: survey.surveyParams, surveyData: {}});
-                            // check that the response is not completed
-                            if (response.complete === true) return res.status(400).json({success: false, message: 'Response already completed.'});
-                            return res.status(200).json({success: true, surveyJSON: survey.surveyJSON, surveyParams: survey.surveyParams, surveyData: response.surveyData});
-                        });
-                });
-            Response.findOne({$and:[{}]})
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
-});
-
-router.post('/taker/:survey_id', (req,res) => {
-    // First, check if the survey is active
-    // Next, check if the answers in req are the correct type based on the survey
-    // Then, check if the user already has a response to this survey
-    // If the response exists already, update the simply update the surveyData field of the response
-    // If the response does not exist, create and submit a new (incomplete) response
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Please log in.', success: false});
-    const username = req.session.passport.user;
-    Survey.findById(req.params.survey_id)
-        .select('published deactivated surveyJSON')
-        .exec()
-        .then(survey => {
-            if (!survey) return res.status(404).json({success: false, message: 'Survey does not exist.'});
-            if (survey.published !== true || survey.deactivated != false) return res.status(423).json({success: false, message: 'Survey is not active.'});
-            const surveyM = new surveyjs.Model(survey.surveyJSON);
-            // the following concern is just that someone could flood the database with a large json, so I'm not bothering to check if the keys are a subset
-            // https://stackoverflow.com/questions/6756104/get-size-of-json-object
-            if (Object.keys(req.body.survey_data).length > surveyM.getAllQuestions().length) return res.status(400).json({success: false, message: 'Too many question inputs.'});
-            surveyM.data = req.body.survey_data;
-            surveyM.clearIncorrectValues();
-            // https://poopcode.com/compare-two-json-objects-ignoring-the-order-of-the-properties-in-javascript/
-            if(!_.isEqual(surveyM.data, req.body.survey_data)) return res.status(400).json({success: false, message: 'Invalid question inputs.'});
-            User.findOne({username: username}) // this is just to get the user's id
-                .select('')
-                .exec()
-                .then(user => {
-                    if (!user) return res.status(404).json({success: false, message: 'User not found.'});
-                    Response.findOne({$and:[{'user':user._id}, {'survey':survey._id}]})
-                        .exec()
-                        .then(response => {
-                            if (!response) {
-                                const new_response = new Response({
-                                    _id: new mongoose.Types.ObjectId(),
-                                    survey: survey._id,
-                                    user: user._id,
-                                    surveyData: req.body.survey_data,
-                                    complete: false
-                                });
-                                new_response.save().then(() => {
-                                    return res.status(201).json({success: true, message: 'Response created.'});
-                                });
-                                return; // promises fall through
-                            }
-                            if (response.complete === true) return res.status(400).json({success: false, message: 'Response already completed.'});
-                            response.surveyData = req.body.survey_data;
-                            response.save().then(() => {
-                                return res.status(200).json({success: true, message: 'Response updated.'});
-                            });
-                        });
-                });
         }).catch(err =>{
             console.log(err);
             res.status(500).json({

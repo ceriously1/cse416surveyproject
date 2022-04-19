@@ -9,9 +9,7 @@ const User = new Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     balance: { type: Number, default: 0},
-    // !! these are the completed and incomplete answers !!
-    responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response'}],
-    // surveys_responded includes not-completed surveys
+    answers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Answer'}],
     surveys_responded: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Survey'}],
     surveys_created: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Survey'}] // Self-created surveys
 });

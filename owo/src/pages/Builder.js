@@ -1,11 +1,10 @@
-import {useParams, useNavigate} from 'react-router-dom';
+import {useParams} from 'react-router-dom';
 import {Survey} from 'survey-react-ui';
 import {Model} from 'survey-core';
 import {useEffect, useState} from 'react';
 
 
 function Builder() {
-    const navigate = useNavigate();
     // 'survey_id' identifies the survey being built
     // a special case is when survey_id is 0, which indicates that a completely new survey is being created
     // in any case, the client will attempt to GET the surveyJSON from the server once
@@ -58,7 +57,7 @@ function Builder() {
         typeQuestion.isRequired = true;
         typeQuestion.choices = ['text', 'dropdown', 'checkbox'];
         const choices = qPage.addNewQuestion('multipletext', 'choices');
-        choices.title = 'Add choices';
+        choices.title = 'Add choices (Fill at least 2)';
         choices.isRequired = true;
         choices.visibleIf = "{type} = 'dropdown' or {type} = 'checkbox'";
         choices.items = [];
@@ -179,7 +178,7 @@ function Builder() {
         survey.showCompletedPage = false;
     }
 
-    // creating our own custom nav buttons
+    // builder-specific configuration (change in Taker.js)
     survey.showNavigationButtons = 'none';
 
     // https://surveyjs.io/Examples/Library/?id=survey-afterrender&platform=Reactjs&theme=default#content-js
@@ -282,7 +281,6 @@ function Builder() {
             })
             .then(response => {
                 console.log(response);
-                if (survey_id === '0') navigate(`/survey/builder/${response.survey_id}`);
             });
     }
 
