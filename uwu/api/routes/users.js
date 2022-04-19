@@ -1,12 +1,14 @@
 const passport = require('passport');
 const User = require('../models/user.js');
 const router = require('express').Router();
+const mongoose = require('mongoose');
 
 // https://github.com/saintedlama/passport-local-mongoose#api-documentation
 // Academind tutorial for the User.find(), 400 responses
 
 router.post('/signup', (req, res) => {
     User.register(new User({
+        _id: new mongoose.Types.ObjectId(),
         username: req.body.username, 
         email: req.body.email
     }), req.body.password, (err) => {
@@ -19,7 +21,7 @@ router.post('/signup', (req, res) => {
         }
         console.log(`${req.body.username} registered.`);
         res.status(200).json({
-            sucess: true,
+            success: true,
             message: `${req.body.username} registered.`
         });
     });
@@ -34,7 +36,7 @@ router.post('/signup', (req, res) => {
 // you can access the user with req.session.passport.user without adding any middleware to routes, undefined otherwise
 // good explanation: http://toon.io/understanding-passportjs-authentication-flow/
 router.post('/login', passport.authenticate('local'), (req, res) => {
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
         message: 'Authentification successful'
     });

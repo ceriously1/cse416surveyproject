@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const surveySchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     publisher: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    publisherName: { type: String, required: true},
     published: { type: Boolean, default: false},
     deactivated: { type: Boolean, default: false },
     surveyJSON: Object, // JSON object used to render survey
@@ -13,8 +14,8 @@ const surveySchema = new mongoose.Schema({
         payout: {type: Number, required: true},
         reserved: {type: Number, required: true}
     },
-    // remember to append answer_id to the following list when a surveyee 
-    answers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Answer' }]
+    // !! these are the completed answers !!
+    responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }]
     //publish_date: {type: Date, required: true},
     //deactivation_date: Date,
 }, {versionKey: false});
