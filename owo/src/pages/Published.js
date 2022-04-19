@@ -8,6 +8,8 @@ function Published() {
     // surveyStatus determines which kind of survey is displayed
     const [surveyStatus, setSurveyStatus] = useState('active');
     const [surveys, setSurveys] = useState([]);
+    // the purpose of toggle is to have a way of refreshing the surveys whenever we want
+    const [toggle, setToggle] = useState(false);
 
     useEffect(() => {
         // active = published: true, deactivated: false; inactive = published: true, deactivated: true; in-progress = published: false, deactivated: false
@@ -27,7 +29,7 @@ function Published() {
             console.log(data);
             setSurveys(data.surveys);
         }) 
-    }, [surveyStatus]);
+    }, [surveyStatus, toggle]);
 
     if (isLoading) return <div>Surveys Published Loading</div>;
 
@@ -45,7 +47,7 @@ function Published() {
             <button onClick={() => {if (surveyStatus !== 'inactive') {setSurveyStatus('inactive'); setIsLoading(true);}}}>Inactive Surveys</button>
             <button onClick={() => {if (surveyStatus !== 'building') {setSurveyStatus('building'); setIsLoading(true);}}}>Surveys Being Built</button>
         </div>
-        <SurveyList surveys={surveys} surveyStatus={surveyStatus}/>
+        <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
     </div>;
 }
 

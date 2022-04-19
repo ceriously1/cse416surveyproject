@@ -8,9 +8,9 @@ function NavigationBar() {
                 <li><Link to='/user/signup'>Sign Up</Link></li>
                 <li><Link to='/user/login'>Login</Link></li>
                 <li><Link to='/user/balance'>Balance</Link></li>
-                <li><Link to='/survey/published/active'>Surveys Published</Link></li>
-                <li><Link to='/user/survey/progress'>Survey Progress</Link></li>
-                <li><Link to='/survey/in-progress/taking'>Survey Taker</Link></li>
+                <li><Link to='/survey/published'>Surveys Published</Link></li>
+                <li><Link to='/survey/progress'>Survey Progress</Link></li>
+                <li><Link to='/survey/search'>Search</Link></li>
             </ul>
         </nav>
     </header>;

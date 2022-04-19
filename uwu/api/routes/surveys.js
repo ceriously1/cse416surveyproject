@@ -3,6 +3,7 @@ const User = require('../models/user.js');
 const Survey = require('../models/survey.js');
 const router = require('express').Router();
 const mongoose = require('mongoose');
+const { query } = require('express');
 
 router.get('/builder/:survey_id', (req,res) => {
     if (typeof req.session.passport === 'undefined') res.status(401).json({message: 'Session expired. Log back in.'})
@@ -139,6 +140,69 @@ router.get('/list/:survey_status', (req, res) => {
         }).catch(err =>{
             console.log(err);
             res.status(500).json({
+                error: err
+            });
+        });
+});
+
+// https://stackoverflow.com/questions/26814456/how-to-get-all-the-values-that-contains-part-of-a-string-using-mongoose-find
+router.get('/search/:query?', (req, res) => {
+    if (typeof req.params.query === 'undefined') {
+        Survey.find({$and:[{'published':true}, {'deactivated':false}]})
+        .sort({'_id': -1}).limit(20).exec().then(surveys => {
+            return res.status(201).json({message: 'Surveys found.', surveys:surveys});
+        }).catch(err =>{
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
+        });
+    } else {
+        // https://stackoverflow.com/questions/13272824/combine-two-or-queries-with-and-in-mongoose
+        Survey.find({$and:[{$or:[{'surveyParams.title':{'$regex':req.params.query,'$options':'i'}}, {'surveyParams.description':{'$regex':req.params.query,'$options':'i'}}]}, {'published':true}, {'deactivated':false}]})
+        .sort({'_id': -1}).limit(20).exec().then(surveys => {
+                return res.status(201).json({message: 'Surveys found.', surveys:surveys});
+            }).catch(err =>{
+                console.log(err);
+                res.status(500).json({
+                    error: err
+                });
+            });
+    }
+});
+
+router.post('/activate/:survey_id', (req, res) => {
+    if (typeof req.session.passport === 'undefined') res.status(401).json({message: 'Session expired. Log back in.'})
+    User.findOne({username: req.session.passport.user})
+        .exec()
+        .then(user => {
+            if (!user) return res.status(404).json({success: false, message: 'User not found.'});
+            req.params.survey_id;
+            Survey.findById(req.params.survey_id).exec().then(survey => {
+                if (typeof survey === 'undefined') return res.status(404).json({success: false, message: 'Survey not found.'});
+                const bool1 = req.body.toggle === 'activate' && survey.published === false && survey.deactivated === false;
+                const bool2 = req.body.toggle === 'deactivate' && survey.published === true && survey.deactivated === false;
+                if (!bool1 && !bool2) return res.status(400).json({success: false, message: 'Check method and survey state'});
+                if (bool1) {
+                    console.log(survey.published);
+                    survey.published = true;
+                    survey.deactivated = false;
+                    survey.save().then(result => {
+                        return res.status(201).json({success: true, message: 'Survey published/deactivated.'});
+                    });
+                }
+                if (bool2) {
+                    survey.published = true;
+                    survey.deactivated = true;
+                    survey.save().then(result => {
+                        return res.status(201).json({success: true, message: 'Survey published.'});
+                    });
+                }
+            });
+        }).catch(err =>{
+            console.log(err);
+            res.status(500).json({
+                success: false,
                 error: err
             });
         });
