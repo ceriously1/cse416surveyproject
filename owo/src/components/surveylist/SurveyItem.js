@@ -28,6 +28,23 @@ function SurveyItem(props) {
         });
     }
 
+    function deleteBuild() {
+        fetch(`http://localhost:4000/survey/published/delete/${survey._id}`, 
+        {
+            method: 'Post',
+            credentials: 'include',
+        }
+        ).then(res => {
+            return res.json()
+        })
+        .then(response => {
+            console.log(response);
+            if (response.success === true) {
+                props.setToggle(!props.toggle);
+            }
+        });
+    }
+
     function buttons() {
         if (surveyStatus === 'active') {
             return <div>
@@ -44,6 +61,7 @@ function SurveyItem(props) {
             return <div>
                 <button onClick={() => {navigate(`/survey/builder/${survey._id}`)}}>Continue</button>
                 <button onClick={() => {activate('activate')}}>Activate</button>
+                <button onClick={() => {deleteBuild()}}>Delete</button>
             </div>
         }
         if (surveyStatus === 'in-progress') {
@@ -64,6 +82,7 @@ function SurveyItem(props) {
     }
 
     function info() {
+        // can use switch, but that doesn't really matter because there aren't particulary many variations of surveyStatus
         if (surveyStatus === 'active') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
@@ -71,7 +90,7 @@ function SurveyItem(props) {
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserved - {surveyParams.reserved} microAlgos</div>
-                <div>Hits - {survey.answers.length}</div>
+                <div>Completed - {survey.responses.length}</div>
             </div>
         }
         if (surveyStatus === 'inactive') {
@@ -81,7 +100,7 @@ function SurveyItem(props) {
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserved - {surveyParams.reserved} microAlgos</div>
-                <div>Hits - {survey.answers.length}</div>
+                <div>Completed - {survey.responses.length}</div>
             </div>
         }
         if (surveyStatus === 'building') {
@@ -96,31 +115,34 @@ function SurveyItem(props) {
         if (surveyStatus === 'in-progress') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
+                <div>Publisher - {survey.publisherName}</div>
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserved - {surveyParams.reserved} microAlgos</div>
-                <div>Hits - {survey.answers.length}</div>
+                <div>Completed - {survey.responses.length}</div>
             </div>
         }
         if (surveyStatus === 'history') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
+                <div>Publisher - {survey.publisherName}</div>
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserved - {surveyParams.reserved} microAlgos</div>
-                <div>Hits - {survey.answers.length}</div>
+                <div>Completed - {survey.responses.length}</div>
             </div>
         }
         if (surveyStatus === 'search') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
+                <div>Publisher - {survey.publisherName}</div>
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserved - {surveyParams.reserved} microAlgos</div>
-                <div>Hits - {survey.answers.length}</div>
+                <div>Completed - {survey.responses.length}</div>
             </div>
         }
     }
