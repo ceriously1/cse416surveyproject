@@ -32,7 +32,6 @@ function Published() {
                 return;
             }
             setIsLoading(false);
-            console.log(data);
             setSurveys(data.surveys);
         }) 
     }, [surveyStatus, toggle, navigate]);

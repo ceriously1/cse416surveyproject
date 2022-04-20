@@ -47,6 +47,12 @@ router.post('/logout', (req, res) => {
     return res.status(200).json({success: true, message: 'Logged out.'});
 });
 
+router.get('/logged', (req, res) => {
+    let logged = false;
+    if (req.user) logged = true;
+    res.status(200).json({success: true, logged:logged});
+});
+
 // handling GET request from /user/balance (displays balance, transaction history)
 // Note: you may get something like "websocket closed due to suspension", this is if you send a 304 I think
 router.get("/balance", (req, res, next) => {
