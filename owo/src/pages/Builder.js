@@ -30,7 +30,7 @@ function Builder() {
         .then(response => {
             setIsLoading(false);
             console.log(response.message);
-            if (survey_id !== '0') {
+            if (typeof survey_id !== 'undefined' && survey_id !== '0') {
                 setSurveyJSON(response.surveyJSON);
                 setSurveyParams(response.surveyParams);
             }
@@ -115,17 +115,22 @@ function Builder() {
         const titleQuestion = pPage.addNewQuestion('text');
         titleQuestion.title = 'Survey Title';
         titleQuestion.isRequired = true;
+        titleQuestion.value = surveyParams.title;
         const descQuestion = pPage.addNewQuestion('text');
         descQuestion.title = 'Decription';
+        descQuestion.value = surveyParams.description;
         const tagQuestion = pPage.addNewQuestion('dropdown');
         tagQuestion.title = 'Tag 1';
         tagQuestion.choices = ['Garble', 'Goo', 'Wobble', 'Squabble'];
+        tagQuestion.value = surveyParams.tags[0];
         const payQuestion = pPage.addNewQuestion('text');
         payQuestion.inputType = 'number';
         payQuestion.title = 'Payout (microAlgos)';
+        payQuestion.value = surveyParams.payout;
         const reservedQuestion = pPage.addNewQuestion('text');
         reservedQuestion.inputType = 'number';
         reservedQuestion.title = 'Reserved (microAlgos)';
+        reservedQuestion.value = surveyParams.reserved;
         function saveParams() {
             const data = pSurvey.getPlainData();
             if (data[0].value === null) {
@@ -278,10 +283,11 @@ function Builder() {
                 body: JSON.stringify(full_json)
             }
             ).then(res => {
-                return res.json()
+                return res.json();
             })
             .then(response => {
                 console.log(response);
+                // changing url to include proper id
                 if (survey_id === '0') navigate(`/survey/builder/${response.survey_id}`);
             });
     }
@@ -297,7 +303,7 @@ function Builder() {
         <div>Description: {surveyParams.description}</div>
         <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>
         <div>Payout: {surveyParams.payout} microAlgos</div>
-        <div>Reserved: {surveyParams.reserved} microAlgos</div>
+        <div>Reserve: {surveyParams.reserved} microAlgos</div>
         <div><Survey model={survey}/></div>
         <div>
             <button onClick={() => {survey.prevPage()}}>Prev Page</button>
@@ -308,7 +314,7 @@ function Builder() {
             <button onClick={() => {addNewPage()}}>Add Page</button>
         </div>
         <div>
-            <button onClick={() => {editSurveyParams()}}>Edit Survey Attributes</button>
+            <button onClick={() => {editSurveyParams()}}>Edit Survey Parameters</button>
             <button onClick={() => {saveSurvey()}}>Save Survey</button>
         </div>
     </div>;

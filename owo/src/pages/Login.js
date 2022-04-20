@@ -1,6 +1,8 @@
 import {useRef} from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
+    const navigate = useNavigate();
     const userLoginRef = useRef();
     const passwordRef = useRef();
 
@@ -25,6 +27,7 @@ function Login() {
             })
             .then(response => {
                 console.log(response);
+                if (response.success === true) navigate('/');
             });
     }
 

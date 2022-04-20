@@ -8,7 +8,7 @@ const User = new Schema({
     _id: mongoose.Schema.Types.ObjectId,
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    balance: { type: Number, default: 0},
+    balance: { type: Number, default: 0, min: 0},
     // !! these are the completed and incomplete answers !!
     responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response'}],
     // surveys_responded includes not-completed surveys

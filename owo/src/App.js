@@ -10,6 +10,7 @@ import Published from './pages/Published.js';
 import Signup from './pages/Signup.js';
 import Taker from './pages/Taker.js';
 import Search from './pages/Search.js';
+import View from './pages/View.js';
 
 import NavigationBar from './components/layout/NavigationBar.js';
 
@@ -28,6 +29,7 @@ function App() {
         <Route path='/survey/builder/:survey_id' element={<Builder/>}/>
         <Route path='/survey/taker/:survey_id' element={<Taker/>}/>
         <Route path='/survey/search' element={<Search/>}/>
+        <Route path='/survey/view/:survey_id' element={<View/>}/>
       </Routes>
     </div>
   );

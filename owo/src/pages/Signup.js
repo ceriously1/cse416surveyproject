@@ -1,6 +1,8 @@
 import {useRef} from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function SignUp() {
+    const navigate = useNavigate();
     const usernameRef = useRef();
     const passwordRef = useRef();
     const emailRef = useRef();
@@ -23,6 +25,7 @@ function SignUp() {
             ).then(res => {return res.json()})
             .then(response => {
                 console.log(response);
+                if (response.success === true) navigate('/user/login');
             });
     }
 

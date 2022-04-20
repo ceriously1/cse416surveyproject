@@ -89,7 +89,7 @@ function SurveyItem(props) {
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserved - {surveyParams.reserved} microAlgos</div>
+                <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completed - {survey.responses.length}</div>
             </div>
         }
@@ -99,7 +99,7 @@ function SurveyItem(props) {
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserved - {surveyParams.reserved} microAlgos</div>
+                <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completed - {survey.responses.length}</div>
             </div>
         }
@@ -109,7 +109,7 @@ function SurveyItem(props) {
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserved - {surveyParams.reserved} microAlgos</div>
+                <div>Reserve - {surveyParams.reserved} microAlgos</div>
             </div>
         }
         if (surveyStatus === 'in-progress') {
@@ -119,7 +119,7 @@ function SurveyItem(props) {
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserved - {surveyParams.reserved} microAlgos</div>
+                <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completed - {survey.responses.length}</div>
             </div>
         }
@@ -130,7 +130,7 @@ function SurveyItem(props) {
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserved - {surveyParams.reserved} microAlgos</div>
+                <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completed - {survey.responses.length}</div>
             </div>
         }
@@ -141,7 +141,7 @@ function SurveyItem(props) {
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserved - {surveyParams.reserved} microAlgos</div>
+                <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completed - {survey.responses.length}</div>
             </div>
         }

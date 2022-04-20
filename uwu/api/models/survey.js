@@ -12,7 +12,7 @@ const surveySchema = new mongoose.Schema({
         description: {type: String, required: true},
         tags: [String],
         payout: {type: Number, required: true},
-        reserved: {type: Number, required: true}
+        reserved: {type: Number, required: true, min: 0}
     },
     // !! these are the completed answers !!
     responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }]

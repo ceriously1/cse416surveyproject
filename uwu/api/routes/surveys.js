@@ -39,10 +39,10 @@ router.get('/builder/:survey_id', (req,res) => {
 router.post('/builder/:survey_id', (req,res) => {
     // incoming req has credentials, body: {surveyJSON, surveyParams}
     if (typeof req.body.surveyJSON.pages === 'undefined') {
-        return res.status(400).json({message: 'No pages in survey.'});
+        return res.status(400).json({message: 'No pages in survey.', survey_id:req.params.survey_id});
     }
     // 1. Find the user_id
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.'})
+    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.', survey_id:req.params.survey_id})
     const username = req.session.passport.user;
     User.findOne({username: username})
         .exec()
@@ -76,15 +76,15 @@ router.post('/builder/:survey_id', (req,res) => {
                             survey.surveyJSON = req.body.surveyJSON;
                             survey.surveyParams =req.body.surveyParams;
                             survey.save().then(result => {
-                                return res.status(201).json({message: 'Survey updated.'});
+                                return res.status(201).json({message: 'Survey updated.', survey_id:req.params.survey_id});
                             });
                         }
                         else {
-                            return res.status.apply(401).json({message: 'Can only edit survey being built.'});
+                            return res.status.apply(401).json({message: 'Can only edit survey being built.', survey_id:req.params.survey_id});
                         }
                     });
                 } else {
-                    return res.status(401).json({message: 'User cannot access survey.'});
+                    return res.status(401).json({message: 'User cannot access survey.', survey_id:req.params.survey_id});
                 }
             }
         }).catch(err =>{
@@ -153,11 +153,18 @@ router.get('/list/:survey_status', (req, res) => {
         options.path = 'responses';
         options.match = {complete: {$eq: false}};
         options.select = 'survey';
+        // https://stackoverflow.com/questions/36996384/how-to-populate-nested-entities-in-mongoose
+        options.populate =[{
+            path: 'survey'
+        }];
     }
     else if (surveyStatus === 'history') {
         options.path = 'responses';
         options.match = {complete: {$eq: true}};
         options.select = 'survey';
+        options.populate =[{
+            path: 'survey'
+        }];
     }
     else {
         console.log(surveyStatus);
@@ -170,14 +177,10 @@ router.get('/list/:survey_status', (req, res) => {
         .then(user => {
             if (!user) return res.status(404).json({message: 'User not found.'});
             if (surveyStatus === 'active' || surveyStatus === 'inactive' || surveyStatus === 'building') {
-                res.status(201).json({
-                    message: 'Surveys found.',
-                    // should be an array of survey objects
-                    surveys: user.surveys_created
-                });
+                res.status(201).json({message: 'Surveys found.', surveys: user.surveys_created});
             }
             if (surveyStatus === 'in-progress' || surveyStatus === 'history') {
-                // 
+                res.status(201).json({message: 'Surveys found.', surveys:user.responses.map(response => response.survey)});
             }
         }).catch(err =>{
             console.log(err);
@@ -229,7 +232,7 @@ router.post('/activate/:survey_id', (req, res) => {
                     console.log(survey.published);
                     survey.published = true;
                     survey.deactivated = false;
-                    survey.save().then(result => {
+                    survey.save().then(() => {
                         return res.status(201).json({success: true, message: 'Survey published/deactivated.'});
                     });
                 }
@@ -276,7 +279,6 @@ router.get('/taker/:survey_id', (req, res) => {
                             return res.status(200).json({success: true, surveyJSON: survey.surveyJSON, surveyParams: survey.surveyParams, surveyData: response.surveyData});
                         });
                 });
-            Response.findOne({$and:[{}]})
         }).catch(err =>{
             console.log(err);
             res.status(500).json({
@@ -285,6 +287,66 @@ router.get('/taker/:survey_id', (req, res) => {
             });
         });
 });
+
+// practically a dupliate of the above route
+router.get('/view/:survey_id', (req, res) => {
+    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Please log in.', success: false});
+    const username = req.session.passport.user;
+    Survey.findOne({_id: req.params.survey_id})
+        .select('published deactivated surveyJSON surveyParams')
+        .exec()
+        .then(survey => {
+            if (!survey) return res.status(404).json({success: false, message: 'Survey not found'});
+            if (survey.published === false && survey.deactivated === false) return res.status(400).json({success: false, message: 'Survey is being built.'});
+            User.findOne({username: username})
+                .select('')
+                .exec()
+                .then(user => {
+                    if (!user) return res.status(404).json({success: false, message: 'User not found.'});
+                    Response.findOne({$and:[{user:user._id}, {survey:survey._id}]})
+                        .then(response => {
+                            if (!response) return res.status(200).json({success: true, surveyJSON: survey.surveyJSON, surveyParams: survey.surveyParams, surveyData: {}});
+                            return res.status(200).json({success: true, surveyJSON: survey.surveyJSON, surveyParams: survey.surveyParams, surveyData: response.surveyData});
+                        });
+                });
+        }).catch(err =>{
+            console.log(err);
+            res.status(500).json({
+                success: false,
+                error: err
+            });
+        });
+});
+
+async function transact(survey_id, user_id, response_id) {
+    let transacted = false;
+    let no_reserve = false;
+    // https://medium.com/cashpositive/the-hitchhikers-guide-to-mongodb-transactions-with-mongoose-5bf8a6e22033
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const survey = await Survey.findById(survey_id).session(session);
+        survey.surveyParams.reserved -= survey.surveyParams.payout;
+        if (survey.surveyParams.reserved < 0) no_reserve = true;
+        survey.responses.push(response_id);
+        await survey.save();
+        const user = await User.findById(user_id).session(session);
+        user.balance += survey.surveyParams.payout;
+        await user.save();
+        const response = await Response.findById(response_id).session(session);
+        response.complete = true;
+        await response.save();
+        await session.commitTransaction();
+        transacted = true;
+    } catch (error) {
+        await session.abortTransaction();
+        //console.error(error);
+        throw error;
+    } finally {
+        session.endSession();
+        return [transacted, no_reserve];
+    }
+}
 
 router.post('/taker/:survey_id', (req,res) => {
     // First, check if the survey is active
@@ -295,7 +357,6 @@ router.post('/taker/:survey_id', (req,res) => {
     if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Please log in.', success: false});
     const username = req.session.passport.user;
     Survey.findById(req.params.survey_id)
-        .select('published deactivated surveyJSON')
         .exec()
         .then(survey => {
             if (!survey) return res.status(404).json({success: false, message: 'Survey does not exist.'});
@@ -308,8 +369,11 @@ router.post('/taker/:survey_id', (req,res) => {
             surveyM.clearIncorrectValues();
             // https://poopcode.com/compare-two-json-objects-ignoring-the-order-of-the-properties-in-javascript/
             if(!_.isEqual(surveyM.data, req.body.survey_data)) return res.status(400).json({success: false, message: 'Invalid question inputs.'});
+            if (req.body.completing === true) {
+                const required_questions_filled = surveyM.getAllQuestions().filter(question => question.isRequired === true).map(question => (typeof question.value !== 'undefined') && (question.value !== []) && (question.value !== null)).reduce((a, b) => a && b, true);
+                if (!required_questions_filled) return res.status(400).json({success: false, message: 'Cannot complete unless required entries are filled.'});
+            }
             User.findOne({username: username}) // this is just to get the user's id
-                .select('')
                 .exec()
                 .then(user => {
                     if (!user) return res.status(404).json({success: false, message: 'User not found.'});
@@ -325,13 +389,32 @@ router.post('/taker/:survey_id', (req,res) => {
                                     complete: false
                                 });
                                 new_response.save().then(() => {
-                                    return res.status(201).json({success: true, message: 'Response created.'});
+                                    user.responses.push(new_response._id);
+                                    user.save().then(() => {
+                                        if (req.body.completing) {
+                                            transact(survey._id, user._id, new_response._id).then(bools => {
+                                                const [transacted, no_reserve] = bools;
+                                                const success = no_reserve || transacted;
+                                                return res.status(success ? 201 : 500).json({success: success, message: 'Look at booleans.', transacted: transacted, no_reserve:no_reserve});
+                                            });
+                                            return;
+                                        }
+                                        return res.status(201).json({success: true, message: 'Response created.'});
+                                    });
                                 });
                                 return; // promises fall through
                             }
                             if (response.complete === true) return res.status(400).json({success: false, message: 'Response already completed.'});
                             response.surveyData = req.body.survey_data;
                             response.save().then(() => {
+                                if (req.body.completing) {
+                                    transact(survey._id, user._id, response._id).then(bools => {
+                                        const [transacted, no_reserve] = bools;
+                                        const success = no_reserve || transacted;
+                                        return res.status(success ? 201 : 500).json({success: success, message: 'Look at booleans.', transacted: transacted, no_reserve:no_reserve});
+                                    });
+                                    return;
+                                }
                                 return res.status(200).json({success: true, message: 'Response updated.'});
                             });
                         });
