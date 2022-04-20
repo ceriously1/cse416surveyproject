@@ -63,16 +63,43 @@ function SurveyItem(props) {
         });
     };
 
+    function download(type) {
+        fetch(`http://localhost:4000/survey/download/${survey._id}`, 
+        {
+            method: 'Get',
+            credentials: 'include',
+        }
+        ).then(res => {
+            return res.json()
+        })
+        .then(response => {
+            if (response.message === 'Please log in.') {
+                navigate('/user/login',{state:'/survey/published'});
+                alert(response.message);
+                return;
+            }
+            if (!response.success) {
+                alert(response.message);
+                return;
+            }
+            const questions = response.surveyQuestions.map(question => JSON.stringify(question)).toString();
+            const data = JSON.stringify(response.surveyData);
+            alert(questions.concat(data));
+        });
+    }
+
     function buttons() {
         if (surveyStatus === 'active') {
             return <div>
                 <button onClick={() => {navigate(`/survey/view/${survey._id}`)}}>View</button>
                 <button onClick={() => {activate('deactivate')}}>Deactivate</button>
+                <button onClick={() => {download('json')}}>Download JSON</button>
             </div>
         }
         if (surveyStatus === 'inactive') {
             return <div>
                 <button onClick={() => {navigate(`/survey/view/${survey._id}`)}}>View</button>
+                <button onClick={() => {download('json')}}>Download JSON</button>
             </div>
         }
         if (surveyStatus === 'building') {

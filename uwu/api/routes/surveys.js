@@ -109,6 +109,7 @@ router.post('/published/delete/:survey_id', (req, res) => {
                     .select('published deactivated')
                     .exec()
                     .then(survey => {
+                        if (!survey) return res.status(404).json({success: false, message: 'Survey not found.'});
                         if (survey.published === false && survey.deactivated === false) {
                             Survey.findByIdAndDelete(survey._id)
                                 .exec().then(() => {
@@ -462,6 +463,34 @@ router.post('/taker/:survey_id', (req,res) => {
                                 return res.status(200).json({success: true, message: 'Response updated.'});
                             });
                         });
+                });
+        }).catch(err =>{
+            console.log(err);
+            res.status(500).json({
+                success: false,
+                error: err
+            });
+        });
+});
+
+router.get('/download/:survey_id', (req, res) => {
+    if (!req.user) return res.status(401).json({success: false, message: 'Please log in.'});
+    const username = req.session.passport.user;
+    User.findOne({username: username})
+        .select('')
+        .exec()
+        .then(user => {
+            if (!user) return res.status(404).json({success: false, message: 'User not found.'});
+            Survey.findById(req.params.survey_id)
+                .select('surveyJSON responses publisher')
+                .populate('responses', 'surveyData')
+                .exec()
+                .then(survey => {
+                    if (!survey) return res.status(404).json({success: false, message: 'Survey not found.'});
+                    if (!survey.publisher.equals(user._id)) return res.status(401).json({success: false, message: 'Must be publisher to download survey.'});
+                    const surveyM = new surveyjs.Model(survey.surveyJSON);
+                    const surveyData = survey.responses.map(response => response.surveyData);
+                    return res.status(200).json({success: true, surveyQuestions: surveyM.getAllQuestions(), surveyData: surveyData});
                 });
         }).catch(err =>{
             console.log(err);
