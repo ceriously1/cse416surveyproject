@@ -23,11 +23,16 @@ function Progress() {
         ).then(response => {
             return response.json();
         }).then(data => {
+            if (data.message === 'Please log in.') {
+                navigate('/user/login',{state:'/survey/progress'});
+                alert(data.message);
+                return;
+            }
             setIsLoading(false);
             console.log(data);
             setSurveys(data.surveys);
         }) 
-    }, [surveyStatus, toggle]);
+    }, [surveyStatus, toggle, navigate]);
 
     if (isLoading) return <div>Survey Progress Page Loading</div>;
 
@@ -36,7 +41,7 @@ function Progress() {
     }
 
     return <div>
-        <div>Survey Progress Page</div>
+        <h1>Survey Progress</h1>
         <div>
             <button onClick={() => {if (surveyStatus !== 'in-progress') {setSurveyStatus('in-progress'); setIsLoading(true);}}}>In-Progress Surveys</button>
             <button onClick={() => {if (surveyStatus !== 'history') {setSurveyStatus('history'); setIsLoading(true);}}}>Past Survey</button>

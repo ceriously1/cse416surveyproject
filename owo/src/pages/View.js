@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useNavigate, useParams, Navigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import {Survey} from 'survey-react-ui';
 import {Model} from 'survey-core';
 
@@ -23,7 +23,7 @@ function View() {
         .then(response => {
             console.log(response);
             if (response.message === 'Please log in.') {
-                navigate('/user/login');
+                navigate('/user/login',{state:`/survey/view/${survey_id}`});
                 alert(response.message);
                 return;
             }
@@ -32,7 +32,7 @@ function View() {
             setSurveyParams(response.surveyParams);
             setSurveyData(response.surveyData);
         });
-    }, [survey_id]);
+    }, [survey_id, navigate]);
 
     if (isLoading) return <div>Loading Survey Viewer</div>
 
@@ -46,6 +46,7 @@ function View() {
     survey.data = surveyData;
     
     return <div>
+        <h1>Survey Viewer</h1>
         <div>Survey Title: {surveyParams.title}</div>
         <div>Description: {surveyParams.description}</div>
         <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>

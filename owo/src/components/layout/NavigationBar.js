@@ -1,17 +1,36 @@
-import {Link} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 
 function NavigationBar() {
+    const navigate = useNavigate();
+
+    function logout() {
+        fetch('http://localhost:4000/user/logout', 
+        {
+            method: 'Post', 
+            credentials: 'include',
+        }
+        ).then(res => {
+            return res.json()
+        })
+        .then(response => {
+            console.log(response);
+            if (response.success === true) {
+                navigate('/user/login');
+                return;
+            }
+        });
+    }
+
     return <header>
         <nav>
-            <ul style= {{display: 'inline-flex', listStyle: 'none'}}>
-                <li><Link to='/'>Home</Link></li>
-                <li><Link to='/user/signup'>Sign Up</Link></li>
-                <li><Link to='/user/login'>Login</Link></li>
-                <li><Link to='/user/balance'>Balance</Link></li>
-                <li><Link to='/survey/published'>Surveys Published</Link></li>
-                <li><Link to='/survey/progress'>Survey Progress</Link></li>
-                <li><Link to='/survey/search'>Search</Link></li>
-            </ul>
+            <button onClick={() => {navigate('/')}}>Home</button>
+            <button onClick={() => {navigate('/user/signup')}}>Sign Up</button>
+            <button onClick={() => {navigate('/user/login')}}>Login</button>
+            <button onClick={() => {navigate('/user/balance')}}>Balance</button>
+            <button onClick={() => {navigate('/survey/progress')}}>Survey Progress</button>
+            <button onClick={() => {navigate('/survey/published')}}>Surveys Published</button>
+            <button onClick={() => {navigate('/survey/search')}}>Search</button>
+            <button onClick={() => {logout()}}>Log Out</button>
         </nav>
     </header>;
 }

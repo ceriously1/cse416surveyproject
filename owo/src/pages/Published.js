@@ -25,11 +25,17 @@ function Published() {
         ).then(response => {
             return response.json();
         }).then(data => {
+            console.log(data);
+            if (data.message === 'Please log in.') {
+                navigate('/user/login',{state:`/survey/published`});
+                alert(data.message);
+                return;
+            }
             setIsLoading(false);
             console.log(data);
             setSurveys(data.surveys);
         }) 
-    }, [surveyStatus, toggle]);
+    }, [surveyStatus, toggle, navigate]);
 
     if (isLoading) return <div>Surveys Published Loading</div>;
 
@@ -40,7 +46,7 @@ function Published() {
 
 
     return <div>
-        <div>Surveys Published Page</div>
+        <h1>Surveys Published</h1>
         <div><button onClick={() => {navigate('/survey/builder/0')}}>Create New Survey</button></div>
         <div>
             <button onClick={() => {if (surveyStatus !== 'active') {setSurveyStatus('active'); setIsLoading(true);}}}>Active Surveys</button>

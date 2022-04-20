@@ -25,13 +25,13 @@ function SignUp() {
             ).then(res => {return res.json()})
             .then(response => {
                 console.log(response);
-                if (response.success === true) navigate('/user/login');
+                if (response.success === true) navigate('/user/login',{state:'/'});
             });
     }
 
     return (
     <div>
-        <h1>Sign Up Page</h1>
+        <h1>Sign Up</h1>
         <form onSubmit={SignUpHandler}>
             <div>
                 <label htmlFor='username'>Username</label>

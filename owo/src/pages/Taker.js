@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useNavigate, useParams, Navigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import {Survey} from 'survey-react-ui';
 import {Model} from 'survey-core';
 
@@ -25,7 +25,7 @@ function Taker() {
         .then(response => {
             console.log(response);
             if (response.message === 'Please log in.') {
-                navigate('/user/login');
+                navigate('/user/login', {state:`/survey/taker/${survey_id}`});
                 alert(response.message);
                 return; // I think returning before setting state helps prevent stuff from rendering?
             }
@@ -39,7 +39,7 @@ function Taker() {
             setSurveyParams(response.surveyParams);
             setSurveyData(response.surveyData);
         });
-    }, [survey_id]);
+    }, [survey_id, navigate]);
 
     if (isLoading) return <div>Loading Survey Taker</div>
 
@@ -66,7 +66,11 @@ function Taker() {
         })
         .then(response => {
             console.log(response);
-            console.log(response.success);
+            if (response.message === 'Please log in.') {
+                navigate('/user/login',{state:`/survey/taker/${survey_id}`});
+                alert(response.message);
+                return;
+            }
             if (response.success) navigate(`/survey/progress`);
             else navigate(0);
         });
@@ -86,10 +90,16 @@ function Taker() {
         })
         .then(response => {
             console.log(response);
+            if (response.message === 'Please log in.') {
+                navigate('/user/login',{state:`/survey/taker/${survey_id}`});
+                alert(response.message);
+                return;
+            }
         });
     };  
     
     return <div>
+        <h1>Survey Taker</h1>
         <div>Survey Title: {surveyParams.title}</div>
         <div>Description: {surveyParams.description}</div>
         <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>

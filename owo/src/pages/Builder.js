@@ -28,14 +28,19 @@ function Builder() {
             return res.json()
         })
         .then(response => {
-            setIsLoading(false);
             console.log(response.message);
+            if (response.message === 'Please log in.') {
+                navigate('/user/login',{state:`/survey/builder/${survey_id}`});
+                alert(response.message);
+                return;
+            }
+            setIsLoading(false);
             if (typeof survey_id !== 'undefined' && survey_id !== '0') {
                 setSurveyJSON(response.surveyJSON);
                 setSurveyParams(response.surveyParams);
             }
         });
-    }, [survey_id]);
+    }, [survey_id, navigate]);
     // question: does useEffect wait for everything inside of it to finish before continuing?
     // the subsequent code assumes so
 
@@ -287,6 +292,11 @@ function Builder() {
             })
             .then(response => {
                 console.log(response);
+                if (response.message === 'Please log in.') {
+                    navigate('/user/login',{state:`/survey/builder/${survey_id}`});
+                    alert(response.message);
+                    return;
+                }
                 // changing url to include proper id
                 if (survey_id === '0') navigate(`/survey/builder/${response.survey_id}`);
             });
@@ -299,6 +309,7 @@ function Builder() {
     }
 
     return <div>
+        <h1>Survey Builder</h1>
         <div>Survey Title: {surveyParams.title}</div>
         <div>Description: {surveyParams.description}</div>
         <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>

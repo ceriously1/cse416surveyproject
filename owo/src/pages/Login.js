@@ -1,8 +1,9 @@
 import {useRef} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function Login() {
     const navigate = useNavigate();
+    const state = useLocation().state;
     const userLoginRef = useRef();
     const passwordRef = useRef();
 
@@ -27,13 +28,16 @@ function Login() {
             })
             .then(response => {
                 console.log(response);
-                if (response.success === true) navigate('/');
+                if (response.success === true) {
+                    // https://stackoverflow.com/questions/70622541/how-can-i-use-previous-location-to-redirect-user-in-react-router-v6
+                    navigate((state === null) ? '/' : state);
+                }
             });
     }
 
     return (
     <div>
-        <h1>Login Page</h1>
+        <h1>Login</h1>
         <form onSubmit={LoginHandler}>
             <div>
                 <label htmlFor='userLogin'>User</label>

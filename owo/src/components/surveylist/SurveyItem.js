@@ -90,7 +90,7 @@ function SurveyItem(props) {
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
-                <div>Completed - {survey.responses.length}</div>
+                <div>Completions - {survey.responses.length}</div>
             </div>
         }
         if (surveyStatus === 'inactive') {
@@ -100,7 +100,7 @@ function SurveyItem(props) {
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
-                <div>Completed - {survey.responses.length}</div>
+                <div>Completions - {survey.responses.length}</div>
             </div>
         }
         if (surveyStatus === 'building') {
@@ -120,7 +120,7 @@ function SurveyItem(props) {
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
-                <div>Completed - {survey.responses.length}</div>
+                <div>Completions - {survey.responses.length}</div>
             </div>
         }
         if (surveyStatus === 'history') {
@@ -131,7 +131,7 @@ function SurveyItem(props) {
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
-                <div>Completed - {survey.responses.length}</div>
+                <div>Completions - {survey.responses.length}</div>
             </div>
         }
         if (surveyStatus === 'search') {
@@ -142,7 +142,7 @@ function SurveyItem(props) {
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
-                <div>Completed - {survey.responses.length}</div>
+                <div>Completions - {survey.responses.length}</div>
             </div>
         }
     }

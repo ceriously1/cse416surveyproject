@@ -42,13 +42,19 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
     });
 });
 
+router.post('/logout', (req, res) => {
+    req.logout();
+    return res.status(200).json({success: true, message: 'Logged out.'});
+});
+
 // handling GET request from /user/balance (displays balance, transaction history)
 // Note: you may get something like "websocket closed due to suspension", this is if you send a 304 I think
 router.get("/balance", (req, res, next) => {
-    if (req.session.passport.user) {
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
         User.find({username: req.session.passport.user}).exec().then(user => {
             if (user.length < 1) {
                 return res.status(404).json({
+                    success: false,
                     message: 'User no longer exists.'
                 });
             }
@@ -56,21 +62,17 @@ router.get("/balance", (req, res, next) => {
 
             //////
             res.status(200).json({
+                success: true,
                 message: "Balance found.",
                 balance: user[0].balance
             });
         }).catch(err => {
             console.log(err);
             res.status(500).json({
+                success: false,
                 error: err
             });
         });
-    } else {
-        console.log("Invalid cookie. Dev: try logging in again if server restarted");
-        res.status(401).json({
-            message: "Invalid access."
-        });
-    }
 })
 
 module.exports = router;

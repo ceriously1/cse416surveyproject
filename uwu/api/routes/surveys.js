@@ -7,7 +7,7 @@ const surveyjs = require('survey-react-ui');
 const _ = require('lodash');
 
 router.get('/builder/:survey_id', (req,res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.'})
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false})
     User.findOne({username: req.session.passport.user})
         .exec()
         .then(user => {
@@ -42,7 +42,7 @@ router.post('/builder/:survey_id', (req,res) => {
         return res.status(400).json({message: 'No pages in survey.', survey_id:req.params.survey_id});
     }
     // 1. Find the user_id
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.', survey_id:req.params.survey_id})
+    if (!req.user) return res.status(401).json({success: false, message: 'Please log in.', survey_id:req.params.survey_id})
     const username = req.session.passport.user;
     User.findOne({username: username})
         .exec()
@@ -96,7 +96,7 @@ router.post('/builder/:survey_id', (req,res) => {
 });
 
 router.post('/published/delete/:survey_id', (req, res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({success: false, message: 'Session expired. Log back in.'});
+    if (!req.user) return res.status(401).json({success: false, message: 'Please log in.'});
     const username = req.session.passport.user;
     User.findOne({username: username})
         .select('surveys_created')
@@ -130,7 +130,7 @@ router.post('/published/delete/:survey_id', (req, res) => {
 });
 
 router.get('/list/:survey_status', (req, res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.'});
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const surveyStatus = req.params.survey_status;
     // 'Query conditions and other options': https://mongoosejs.com/docs/populate.html
     let options = {
@@ -217,7 +217,7 @@ router.get('/search/:query?', (req, res) => {
 });
 
 router.post('/activate/:survey_id', (req, res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Session expired. Log back in.'})
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false})
     User.findOne({username: req.session.passport.user})
         .exec()
         .then(user => {
@@ -258,7 +258,7 @@ router.get('/taker/:survey_id', (req, res) => {
     // the user does not have to be a publisher
     // whether or not there is enough reserve only affects whether or not the user will get a warning on (attempted) completion
     // the survey has to be active (published, not deactivated)
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Please log in.', success: false});
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const username = req.session.passport.user;
     Survey.findOne({$and:[{_id: req.params.survey_id}, {published: true}, {deactivated: false}]})
         .select('published deactivated surveyJSON surveyParams')
@@ -290,7 +290,7 @@ router.get('/taker/:survey_id', (req, res) => {
 
 // practically a dupliate of the above route
 router.get('/view/:survey_id', (req, res) => {
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Please log in.', success: false});
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const username = req.session.passport.user;
     Survey.findOne({_id: req.params.survey_id})
         .select('published deactivated surveyJSON surveyParams')
@@ -354,7 +354,7 @@ router.post('/taker/:survey_id', (req,res) => {
     // Then, check if the user already has a response to this survey
     // If the response exists already, update the simply update the surveyData field of the response
     // If the response does not exist, create and submit a new (incomplete) response
-    if (typeof req.session.passport === 'undefined') return res.status(401).json({message: 'Please log in.', success: false});
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const username = req.session.passport.user;
     Survey.findById(req.params.survey_id)
         .exec()

@@ -1,8 +1,10 @@
 // see "getting started with fetching data" on the react tutorial
 
 import { useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 function Balance() {
+    const navigate = useNavigate();
     // sets isLoading to "true"
     const [isLoading, setIsLoading] = useState(true);
     const [balance, setBalance] = useState(0);
@@ -22,11 +24,16 @@ function Balance() {
                 return response.json();
             // data is response.json()
             }).then(data => {
-                setIsLoading(false);
+                if (data.message === 'Please log in.') {
+                    navigate('/user/login',{state:`/user/balance`});
+                    alert(data.message);
+                    return;
+                }
                 console.log(data);
+                setIsLoading(false);
                 setBalance(data.balance);
             })
-    }, []);
+    }, [navigate]);
 
     if (isLoading) {
         return (
@@ -36,7 +43,7 @@ function Balance() {
 
     return (
         <section>
-            <h1>Balance Page</h1>
+            <h1>Balance</h1>
             <p>Balance: {balance}</p>
         </section>
     );
