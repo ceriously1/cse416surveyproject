@@ -8,7 +8,7 @@ let debug = true
 
 // connecting to cloud db
 // ajQDfI4Cz3sNN4G6 is the hard-coded password to connect to the db
-const url = 'mongodb+srv://firstuser:ajQDfI4Cz3sNN4G6@cluster0.9neui.mongodb.net/CSE416?retryWrites=true&w=majority';
+const url = 'mongodb+srv://firstuser:'+ process.env.MONGO_ATLAS_PW +'@cluster0.9neui.mongodb.net/CSE416?retryWrites=true&w=majority';
 
 const port = process.env.PORT || 4000;
 

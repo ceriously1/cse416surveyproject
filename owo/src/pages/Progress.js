@@ -44,7 +44,7 @@ function Progress() {
         <h1>Survey Progress</h1>
         <div>
             <button onClick={() => {if (surveyStatus !== 'in-progress') {setSurveyStatus('in-progress'); setIsLoading(true);}}}>In-Progress Surveys</button>
-            <button onClick={() => {if (surveyStatus !== 'history') {setSurveyStatus('history'); setIsLoading(true);}}}>Past Survey</button>
+            <button onClick={() => {if (surveyStatus !== 'history') {setSurveyStatus('history'); setIsLoading(true);}}}>Past Surveys</button>
         </div>
         <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
     </div>;
