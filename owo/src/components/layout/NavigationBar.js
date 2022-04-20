@@ -57,7 +57,6 @@ function NavigationBar() {
             <button onClick={() => {navigate('/user/signup')}}>Sign Up</button>
             <button onClick={() => {navigate('/user/login')}}>Login</button>
             <button onClick={() => {navigate('/survey/search')}}>Search</button>
-            <button onClick={() => {logout()}}>Log Out</button>
         </nav>
     </header>;
 }
