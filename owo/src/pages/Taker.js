@@ -71,8 +71,8 @@ function Taker() {
                 alert(response.message);
                 return;
             }
-            if (response.success) navigate(`/survey/progress`);
-            else navigate(0);
+            if (response.no_reserve) alert('Reserve too low to payout.');
+            navigate(`/survey/progress`);
         });
     });
 

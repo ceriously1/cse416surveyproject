@@ -5,6 +5,7 @@ const router = require('express').Router();
 const mongoose = require('mongoose');
 const surveyjs = require('survey-react-ui');
 const _ = require('lodash');
+const user = require('../models/user.js');
 
 router.get('/builder/:survey_id', (req,res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false})
@@ -129,6 +130,42 @@ router.post('/published/delete/:survey_id', (req, res) => {
         });
 });
 
+// can delete as long as it's not completed
+router.post('/progress/delete/:survey_id', (req, res) => {
+    if (!req.user) return res.status(401).json({success: false, message: 'Please log in.'});
+    const username = req.session.passport.user;
+    User.findOne({username: username})
+        .exec()
+        .then(user => {
+            if (!user) return res.status(404).json({success: false, message: 'User not found.'});
+            Response.findOne({$and:[{survey: req.params.survey_id}, {user: user._id}]})
+                .select('complete')
+                .exec()
+                .then(response => {
+                    if (!response) return res.status(404).json({success: false, message: 'Response not found.'});
+                    if (response.complete) return res.status(400).json({success: false, message: 'Cannot delete completed response.'});
+                    // move to session eventually
+                    // https://stackoverflow.com/questions/5767325/how-can-i-remove-a-specific-item-from-an-array
+                    const index = user.responses.indexOf(response._id);
+                    if (index > -1) {
+                        user.responses.splice(index,1);
+                        console.log('Response not recorded in user for some reason!');
+                    }
+                    user.save().then(() => {
+                        Response.findByIdAndDelete(response._id).then(() => {
+                            return res.status(200).json({success: true, message: 'Response eliminated.'});
+                        });
+                    });
+                });
+        }).catch(err =>{
+            console.log(err);
+            res.status(500).json({
+                success: false,
+                error: err
+            });
+        });
+});
+
 router.get('/list/:survey_status', (req, res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const surveyStatus = req.params.survey_status;
@@ -155,15 +192,17 @@ router.get('/list/:survey_status', (req, res) => {
         options.select = 'survey';
         // https://stackoverflow.com/questions/36996384/how-to-populate-nested-entities-in-mongoose
         options.populate =[{
-            path: 'survey'
+            path: 'survey',
+            // matching here can fill response.survey with null, just filter based on deactivated
+            //match: {published: {$eq: true}, deactivated: {$eq: false}}
         }];
     }
     else if (surveyStatus === 'history') {
         options.path = 'responses';
-        options.match = {complete: {$eq: true}};
-        options.select = 'survey';
+        options.select = 'survey complete';
         options.populate =[{
-            path: 'survey'
+            path: 'survey',
+            //match: {published: {$eq: true}}
         }];
     }
     else {
@@ -177,10 +216,14 @@ router.get('/list/:survey_status', (req, res) => {
         .then(user => {
             if (!user) return res.status(404).json({message: 'User not found.'});
             if (surveyStatus === 'active' || surveyStatus === 'inactive' || surveyStatus === 'building') {
-                res.status(201).json({message: 'Surveys found.', surveys: user.surveys_created});
+                return res.status(201).json({message: 'Surveys found.', surveys: user.surveys_created});
             }
             if (surveyStatus === 'in-progress' || surveyStatus === 'history') {
-                res.status(201).json({message: 'Surveys found.', surveys:user.responses.map(response => response.survey)});
+                if (surveyStatus === 'history') {
+                    const response_list = user.responses.filter(response => (response.complete || response.survey.deactivated));
+                    return res.status(201).json({message: 'Surveys found.', surveys:response_list.map(response => response.survey)});
+                }
+                return res.status(201).json({message: 'Surveys found.', surveys:user.responses.filter(response => !response.survey.deactivated).map(response => response.survey)});
             }
         }).catch(err =>{
             console.log(err);
@@ -344,6 +387,7 @@ async function transact(survey_id, user_id, response_id) {
         throw error;
     } finally {
         session.endSession();
+        // create another function with response.complete = true; and the survey push to another async func if you want to complete even if there is no
         return [transacted, no_reserve];
     }
 }
@@ -394,12 +438,12 @@ router.post('/taker/:survey_id', (req,res) => {
                                         if (req.body.completing) {
                                             transact(survey._id, user._id, new_response._id).then(bools => {
                                                 const [transacted, no_reserve] = bools;
-                                                const success = no_reserve || transacted;
-                                                return res.status(success ? 201 : 500).json({success: success, message: 'Look at booleans.', transacted: transacted, no_reserve:no_reserve});
+                                                const success = transacted;
+                                                return res.status(success ? 201 : 500).json({success: success, message: 'See bools.', transacted: transacted, no_reserve:no_reserve});
                                             });
                                             return;
                                         }
-                                        return res.status(201).json({success: true, message: 'Response created.'});
+                                        return res.status(200).json({success: true, message: 'Response created.'});
                                     });
                                 });
                                 return; // promises fall through
@@ -410,8 +454,8 @@ router.post('/taker/:survey_id', (req,res) => {
                                 if (req.body.completing) {
                                     transact(survey._id, user._id, response._id).then(bools => {
                                         const [transacted, no_reserve] = bools;
-                                        const success = no_reserve || transacted;
-                                        return res.status(success ? 201 : 500).json({success: success, message: 'Look at booleans.', transacted: transacted, no_reserve:no_reserve});
+                                        const success = transacted;
+                                        return res.status(200).json({success: success, message: 'See bools.', transacted: transacted, no_reserve:no_reserve});
                                     });
                                     return;
                                 }

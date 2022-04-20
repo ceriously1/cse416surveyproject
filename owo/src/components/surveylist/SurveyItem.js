@@ -45,6 +45,24 @@ function SurveyItem(props) {
         });
     }
 
+    function deleteResponse() {
+        // affects a User and a Response
+        fetch(`http://localhost:4000/survey/progress/delete/${survey._id}`, 
+        {
+            method: 'Post',
+            credentials: 'include',
+        }
+        ).then(res => {
+            return res.json()
+        })
+        .then(response => {
+            console.log(response);
+            if (response.success === true) {
+                props.setToggle(!props.toggle);
+            }
+        });
+    };
+
     function buttons() {
         if (surveyStatus === 'active') {
             return <div>
@@ -67,6 +85,7 @@ function SurveyItem(props) {
         if (surveyStatus === 'in-progress') {
             return <div>
                 <button onClick={() => {navigate(`/survey/taker/${survey._id}`)}}>Continue</button>
+                <button onClick={() => {deleteResponse()}}>Delete</button>
             </div>
         }
         if (surveyStatus === 'history') {
@@ -124,6 +143,7 @@ function SurveyItem(props) {
             </div>
         }
         if (surveyStatus === 'history') {
+            // add Completed later
             return <div>
                 <div>Title - {surveyParams.title}</div>
                 <div>Publisher - {survey.publisherName}</div>
