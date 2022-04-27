@@ -15,9 +15,9 @@ const surveySchema = new mongoose.Schema({
         reserved: {type: Number, required: true, min: 0}
     },
     // !! these are the completed answers !!
-    responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }]
-    //publish_date: {type: Date, required: true},
-    //deactivation_date: Date,
+    responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response' }],
+    date_published: {type: Date},
+    last_modified: {type: Date, required: true},
 }, {versionKey: false});
 
 module.exports = mongoose.model('Survey', surveySchema, 'Surveys');

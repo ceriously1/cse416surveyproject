@@ -7,6 +7,7 @@ const surveyjs = require('survey-react-ui');
 const _ = require('lodash');
 const user = require('../models/user.js');
 
+// getting survey build information to pass to builder page
 router.get('/builder/:survey_id', (req,res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false})
     User.findOne({username: req.session.passport.user})
@@ -37,6 +38,7 @@ router.get('/builder/:survey_id', (req,res) => {
         });
 });
 
+// Updating the build of the survey or creating a new one if necessary
 router.post('/builder/:survey_id', (req,res) => {
     // incoming req has credentials, body: {surveyJSON, surveyParams}
     if (typeof req.body.surveyJSON.pages === 'undefined') {
@@ -59,11 +61,13 @@ router.post('/builder/:survey_id', (req,res) => {
                     published: false,
                     deactivated: false,
                     surveyJSON: req.body.surveyJSON,
-                    surveyParams: req.body.surveyParams
+                    surveyParams: req.body.surveyParams,
+                    last_modified: new Date().toISOString()
                 });
-                survey.save().then(result => {
+                // consider moving save() to a m_session
+                survey.save().then(() => {
                     user.surveys_created.push(survey._id);
-                    user.save().then(result2 => {
+                    user.save().then(() => {
                         return res.status(201).json({message: 'New survey successfully created.', survey_id: survey._id});
                     });
                 });
@@ -74,8 +78,10 @@ router.post('/builder/:survey_id', (req,res) => {
                 if (user.surveys_created.includes(survey_id)) {
                     Survey.findById(survey_id).exec().then(survey => {
                         if (survey.published === false && survey.deactivated === false) {
+                            survey.last_modified = new Date().toISOString();
                             survey.surveyJSON = req.body.surveyJSON;
                             survey.surveyParams =req.body.surveyParams;
+                            // no need to move save() to a m_session
                             survey.save().then(result => {
                                 return res.status(201).json({message: 'Survey updated.', survey_id:req.params.survey_id});
                             });
@@ -96,24 +102,32 @@ router.post('/builder/:survey_id', (req,res) => {
         });
 });
 
+// note that the route is called published, but this route includes the list for surveys being built
+// this is supposed to delete the survey with the given id
 router.post('/published/delete/:survey_id', (req, res) => {
     if (!req.user) return res.status(401).json({success: false, message: 'Please log in.'});
     const username = req.session.passport.user;
     User.findOne({username: username})
-        .select('surveys_created')
         .exec()
         .then(user => {
             if (!user) return res.status(404).json({success: false, message: 'User not found.'});
-            if (user.surveys_created.includes(req.params.survey_id)) {
+            const index = user.surveys_created.indexOf(req.params.survey_id);
+            if (index > -1) {
                 Survey.findById(req.params.survey_id)
                     .select('published deactivated')
                     .exec()
                     .then(survey => {
                         if (!survey) return res.status(404).json({success: false, message: 'Survey not found.'});
                         if (survey.published === false && survey.deactivated === false) {
+                            // consider moving to m_session
                             Survey.findByIdAndDelete(survey._id)
                                 .exec().then(() => {
-                                    return res.status(201).json({success: true, message: 'Survey deleted.'});
+                                    // removing survey from user's created (not necessarily published) list
+                                    // note that there is no need to delete responses because we can only delete surveys being built
+                                    user.surveys_created.splice(index, 1);
+                                    user.save().then(() => {
+                                        return res.status(201).json({success: true, message: 'Survey deleted.'});
+                                    });
                                 });
                         } else {
                             return res.status(401).json({success: false, message: 'Can only delete survey being built.'});
@@ -131,7 +145,7 @@ router.post('/published/delete/:survey_id', (req, res) => {
         });
 });
 
-// can delete as long as it's not completed
+// deleting response as long as it's not completed
 router.post('/progress/delete/:survey_id', (req, res) => {
     if (!req.user) return res.status(401).json({success: false, message: 'Please log in.'});
     const username = req.session.passport.user;
@@ -150,8 +164,8 @@ router.post('/progress/delete/:survey_id', (req, res) => {
                     const index = user.responses.indexOf(response._id);
                     if (index > -1) {
                         user.responses.splice(index,1);
-                        console.log('Response not recorded in user for some reason!');
                     }
+                    // consider moving to m_session
                     user.save().then(() => {
                         Response.findByIdAndDelete(response._id).then(() => {
                             return res.status(200).json({success: true, message: 'Response eliminated.'});
@@ -167,6 +181,8 @@ router.post('/progress/delete/:survey_id', (req, res) => {
         });
 });
 
+// generic survey list acquiring thing
+// sorting should be done on front end because we're giving them everything
 router.get('/list/:survey_status', (req, res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const surveyStatus = req.params.survey_status;
@@ -195,7 +211,8 @@ router.get('/list/:survey_status', (req, res) => {
         options.populate =[{
             path: 'survey',
             // matching here can fill response.survey with null, just filter based on deactivated
-            //match: {published: {$eq: true}, deactivated: {$eq: false}}
+            // maybe we could move the following match up?
+            // match: {published: {$eq: true}, deactivated: {$eq: false}}
         }];
     }
     else if (surveyStatus === 'history') {
@@ -235,6 +252,8 @@ router.get('/list/:survey_status', (req, res) => {
 });
 
 // https://stackoverflow.com/questions/26814456/how-to-get-all-the-values-that-contains-part-of-a-string-using-mongoose-find
+// getting the search list based on query
+// consider adding sorting, categories here
 router.get('/search/:query?', (req, res) => {
     if (typeof req.params.query === 'undefined') {
         Survey.find({$and:[{'published':true}, {'deactivated':false}]})
@@ -249,7 +268,7 @@ router.get('/search/:query?', (req, res) => {
     } else {
         // https://stackoverflow.com/questions/13272824/combine-two-or-queries-with-and-in-mongoose
         Survey.find({$and:[{$or:[{'surveyParams.title':{'$regex':req.params.query,'$options':'i'}}, {'surveyParams.description':{'$regex':req.params.query,'$options':'i'}}]}, {'published':true}, {'deactivated':false}]})
-        .sort({'_id': -1}).limit(20).exec().then(surveys => {
+        .sort({'date_published': -1}).limit(20).exec().then(surveys => {
                 return res.status(201).json({message: 'Surveys found.', surveys:surveys});
             }).catch(err =>{
                 console.log(err);
@@ -260,6 +279,7 @@ router.get('/search/:query?', (req, res) => {
     }
 });
 
+// publishing/deactivating survey
 router.post('/activate/:survey_id', (req, res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false})
     User.findOne({username: req.session.passport.user})
@@ -269,20 +289,22 @@ router.post('/activate/:survey_id', (req, res) => {
             req.params.survey_id;
             Survey.findById(req.params.survey_id).exec().then(survey => {
                 if (typeof survey === 'undefined') return res.status(404).json({success: false, message: 'Survey not found.'});
-                const bool1 = req.body.toggle === 'activate' && survey.published === false && survey.deactivated === false;
-                const bool2 = req.body.toggle === 'deactivate' && survey.published === true && survey.deactivated === false;
-                if (!bool1 && !bool2) return res.status(400).json({success: false, message: 'Check method and survey state'});
-                if (bool1) {
-                    console.log(survey.published);
+                const activate = req.body.toggle === 'activate' && survey.published === false && survey.deactivated === false;
+                const deactivate = req.body.toggle === 'deactivate' && survey.published === true && survey.deactivated === false;
+                if (!activate && !deactivate) return res.status(400).json({success: false, message: 'Check method and survey state'});
+                if (activate) {
+                    survey.date_published = new Date().toISOString();
                     survey.published = true;
                     survey.deactivated = false;
+                    // use m_session here to transact from user balance to survey reserve
                     survey.save().then(() => {
                         return res.status(201).json({success: true, message: 'Survey published/deactivated.'});
                     });
                 }
-                if (bool2) {
+                if (deactivate) {
                     survey.published = true;
                     survey.deactivated = true;
+                    // use m_session here to transact from survey reserve to user balance
                     survey.save().then(result => {
                         return res.status(201).json({success: true, message: 'Survey published.'});
                     });
@@ -297,6 +319,7 @@ router.post('/activate/:survey_id', (req, res) => {
         });
 });
 
+// gets survey and response of user
 router.get('/taker/:survey_id', (req, res) => {
     // the conditions for allowing a user to take a survey:
     // the user does not have to be a publisher
@@ -332,7 +355,7 @@ router.get('/taker/:survey_id', (req, res) => {
         });
 });
 
-// practically a dupliate of the above route
+// practically a duplicate of the above route, but with slightly different conditions
 router.get('/view/:survey_id', (req, res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const username = req.session.passport.user;
@@ -362,7 +385,7 @@ router.get('/view/:survey_id', (req, res) => {
         });
 });
 
-async function transact(survey_id, user_id, response_id) {
+async function transact_completing(survey_id, user_id, response_id) {
     let transacted = false;
     let no_reserve = false;
     // https://medium.com/cashpositive/the-hitchhikers-guide-to-mongodb-transactions-with-mongoose-5bf8a6e22033
@@ -393,6 +416,7 @@ async function transact(survey_id, user_id, response_id) {
     }
 }
 
+// creating or updating response
 router.post('/taker/:survey_id', (req,res) => {
     // First, check if the survey is active
     // Next, check if the answers in req are the correct type based on the survey
@@ -431,13 +455,14 @@ router.post('/taker/:survey_id', (req,res) => {
                                     survey: survey._id,
                                     user: user._id,
                                     surveyData: req.body.survey_data,
-                                    complete: false
+                                    complete: false,
+                                    last_modified: new Date().toISOString()
                                 });
                                 new_response.save().then(() => {
                                     user.responses.push(new_response._id);
                                     user.save().then(() => {
                                         if (req.body.completing) {
-                                            transact(survey._id, user._id, new_response._id).then(bools => {
+                                            transact_completing(survey._id, user._id, new_response._id).then(bools => {
                                                 const [transacted, no_reserve] = bools;
                                                 const success = transacted;
                                                 return res.status(success ? 201 : 500).json({success: success, message: 'See bools.', transacted: transacted, no_reserve:no_reserve});
@@ -451,9 +476,10 @@ router.post('/taker/:survey_id', (req,res) => {
                             }
                             if (response.complete === true) return res.status(400).json({success: false, message: 'Response already completed.'});
                             response.surveyData = req.body.survey_data;
+                            response.last_modified = new Date().toISOString();
                             response.save().then(() => {
                                 if (req.body.completing) {
-                                    transact(survey._id, user._id, response._id).then(bools => {
+                                    transact_completing(survey._id, user._id, response._id).then(bools => {
                                         const [transacted, no_reserve] = bools;
                                         const success = transacted;
                                         return res.status(200).json({success: success, message: 'See bools.', transacted: transacted, no_reserve:no_reserve});
