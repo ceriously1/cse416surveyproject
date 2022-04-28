@@ -297,8 +297,9 @@ function Builder() {
                     alert(response.message);
                     return;
                 }
+                if (!response.success) alert(response.message);
                 // changing url to include proper id
-                if (survey_id === '0') navigate(`/survey/builder/${response.survey_id}`);
+                else if (survey_id === '0') navigate(`/survey/builder/${response.survey_id}`);
             });
     }
 

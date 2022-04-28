@@ -1,6 +1,7 @@
 const Response = require('../models/response.js');
 const User = require('../models/user.js');
 const Survey = require('../models/survey.js');
+const Transaction = require('../models/transactions.js');
 const router = require('express').Router();
 const mongoose = require('mongoose');
 const surveyjs = require('survey-react-ui');
@@ -42,7 +43,7 @@ router.get('/builder/:survey_id', (req,res) => {
 router.post('/builder/:survey_id', (req,res) => {
     // incoming req has credentials, body: {surveyJSON, surveyParams}
     if (typeof req.body.surveyJSON.pages === 'undefined') {
-        return res.status(400).json({message: 'No pages in survey.', survey_id:req.params.survey_id});
+        return res.status(400).json({success: false, message: 'No pages in survey.', survey_id:req.params.survey_id});
     }
     // 1. Find the user_id
     if (!req.user) return res.status(401).json({success: false, message: 'Please log in.', survey_id:req.params.survey_id})
@@ -50,7 +51,7 @@ router.post('/builder/:survey_id', (req,res) => {
     User.findOne({username: username})
         .exec()
         .then(user => {
-            if (!user) return res.status(404).json({message: 'User not found.'});
+            if (!user) return res.status(404).json({success: false, message: 'User not found.'});
             // surveys will automatically be [] if there is no survey field
             // 2. If the survey_id parameter is 0, construct and save a new survey, add new survey_id to user
             if (req.params.survey_id === '0') {
@@ -68,7 +69,7 @@ router.post('/builder/:survey_id', (req,res) => {
                 survey.save().then(() => {
                     user.surveys_created.push(survey._id);
                     user.save().then(() => {
-                        return res.status(201).json({message: 'New survey successfully created.', survey_id: survey._id});
+                        return res.status(201).json({success: true, message: 'New survey successfully created.', survey_id: survey._id});
                     });
                 });
             // 3. Else check if the survey was created by the user and update the survey
@@ -83,20 +84,21 @@ router.post('/builder/:survey_id', (req,res) => {
                             survey.surveyParams =req.body.surveyParams;
                             // no need to move save() to a m_session
                             survey.save().then(result => {
-                                return res.status(201).json({message: 'Survey updated.', survey_id:req.params.survey_id});
+                                return res.status(200).json({success: true, message: 'Survey updated.', survey_id:req.params.survey_id});
                             });
                         }
                         else {
-                            return res.status.apply(401).json({message: 'Can only edit survey being built.', survey_id:req.params.survey_id});
+                            return res.status.apply(401).json({success: false, message: 'Can only edit survey being built.', survey_id:req.params.survey_id});
                         }
                     });
                 } else {
-                    return res.status(401).json({message: 'User cannot access survey.', survey_id:req.params.survey_id});
+                    return res.status(401).json({success: false, message: 'User cannot access survey.', survey_id:req.params.survey_id});
                 }
             }
         }).catch(err =>{
             console.log(err);
             res.status(500).json({
+                success: false,
                 error: err
             });
         });
@@ -279,6 +281,84 @@ router.get('/search/:query?', (req, res) => {
     }
 });
 
+// for safely activating a survey
+async function transact_activate(user_id, survey_id) {
+    let transacted = false;
+    let no_balance = false;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const survey = await Survey.findById(survey_id).session(session);
+        survey.date_published = new Date().toISOString();
+        survey.published = true;
+        // survey.surveyParams.reserved is already set
+        await survey.save();
+        const user = await User.findById(user_id).session(session);
+        user.balance -= survey.surveyParams.reserved;
+        if (user.balance < 0) {
+            no_balance = true;
+        }
+        const transaction_id = new mongoose.Types.ObjectId();
+        user.transactions.push(transaction_id);
+        await user.save();
+        await Transaction.create([{
+            _id: transaction_id,
+            type: 'fund',
+            from: user_id,
+            to: survey_id,
+            from_name: user.username,
+            to_name: survey.surveyParams.title,
+            amount: survey.surveyParams.reserved,
+            time: new Date().toISOString()
+        }], {session: session});
+        await session.commitTransaction();
+        transacted = true;
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        session.endSession();
+        return [transacted, no_balance];
+    }
+};
+
+// for safely deactivating a survey
+async function transact_deactivate(user_id, survey_id) {
+    let transacted = false;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const survey = await Survey.findById(survey_id).session(session);
+        survey.deactivated = true;
+        const amount = survey.surveyParams.reserved;
+        survey.surveyParams.reserved = 0;
+        await survey.save();
+        const user = await User.findById(user_id).session(session);
+        user.balance += amount;
+        const transaction_id = new mongoose.Types.ObjectId();
+        user.transactions.push(transaction_id);
+        await user.save();
+        await Transaction.create([{
+            _id: transaction_id,
+            type: 'defund',
+            from: survey_id,
+            to: user_id,
+            from_name: survey.surveyParams.title,
+            to_name: user.username,
+            amount: amount,
+            time: new Date().toISOString()
+        }], {session: session});
+        await session.commitTransaction();
+        transacted = true;
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        session.endSession();
+        return transacted;
+    }
+};
+
 // publishing/deactivating survey
 router.post('/activate/:survey_id', (req, res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false})
@@ -293,20 +373,16 @@ router.post('/activate/:survey_id', (req, res) => {
                 const deactivate = req.body.toggle === 'deactivate' && survey.published === true && survey.deactivated === false;
                 if (!activate && !deactivate) return res.status(400).json({success: false, message: 'Check method and survey state'});
                 if (activate) {
-                    survey.date_published = new Date().toISOString();
-                    survey.published = true;
-                    survey.deactivated = false;
-                    // use m_session here to transact from user balance to survey reserve
-                    survey.save().then(() => {
-                        return res.status(201).json({success: true, message: 'Survey published/deactivated.'});
+                    transact_activate(user._id, survey._id).then(transact_result => {
+                        const [transacted, no_balance] = transact_result;
+                        if (transacted) return res.status(200).json({success: true, message: 'Survey activated.'});
+                        return res.status(500).json({success: false, message: 'Survey not activated.', no_balance: no_balance});
                     });
                 }
                 if (deactivate) {
-                    survey.published = true;
-                    survey.deactivated = true;
-                    // use m_session here to transact from survey reserve to user balance
-                    survey.save().then(result => {
-                        return res.status(201).json({success: true, message: 'Survey published.'});
+                    transact_deactivate(user._id, survey._id).then(transacted => {
+                        if (transacted) return res.status(200).json({success: true, message: 'Survey deactivated.'});
+                        return res.status(500).json({success: false, message: 'Survey not deactivated.'});
                     });
                 }
             });
@@ -315,6 +391,70 @@ router.post('/activate/:survey_id', (req, res) => {
             res.status(500).json({
                 success: false,
                 error: err
+            });
+        });
+});
+
+// for safely funding an active survey
+async function transact_fund(user_id, survey_id, amount) {
+    let transacted = false;
+    let no_balance = false;
+    let active = true;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const survey = await Survey.findById(survey_id).session(session);
+        active = survey.published && !survey.deactivated;
+        if (!active) {
+            throw 'Survey is in invalid state to fund.';
+        }
+        survey.surveyParams.reserved += amount;
+        await survey.save();
+        const user = await User.findById(user_id).session(session);
+        user.balance -= amount;
+        if (user.balance < 0) {
+            no_balance = true;
+        }
+        const transaction_id = new mongoose.Types.ObjectId();
+        user.transactions.push(transaction_id);
+        await user.save();
+        await Transaction.create([{
+            _id: transaction_id,
+            type: 'fund',
+            from: user_id,
+            to: survey_id,
+            from_name: user.username,
+            to_name: survey.surveyParams.title,
+            amount: amount,
+            time: new Date().toISOString()
+        }], {session: session});
+        await session.commitTransaction();
+        transacted = true;
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        session.endSession();
+        return [transacted, no_balance, active];
+    }
+};
+
+// funding of active survey
+router.post('/fund/:survey_id', (req, res) => {
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
+    User.findOne({username: req.session.passport.user})
+        .select('')
+        .exec()
+        .then(user => {
+            // not checking if user created survey, just that the user is authenticated
+            if (!user) return res.status(404).json({success: false, message: 'User not found.'});
+            const amount = parseInt(req.body.amount);
+            console.log(req.body);
+            if (Number.isNaN(amount) || amount < 0) return res.status(400).json({success: false, message: 'Not a valid value to fund.', no_balance: false, active: true});
+            transact_fund(user._id, req.params.survey_id, Number(req.body.amount)).then(result => {
+                const [transacted, no_balance, active] = result;
+                if (transacted) return res.status(200).json({success: true, message: 'Survey funded.'});
+                return res.status(500).json({success: false, message: 'Failed to fund survey.', no_balance: no_balance, active: active});
             });
         });
 });
@@ -399,7 +539,20 @@ async function transact_completing(survey_id, user_id, response_id) {
         await survey.save();
         const user = await User.findById(user_id).session(session);
         user.balance += survey.surveyParams.payout;
+        // construct transaction before saving user
+        const transaction_id = new mongoose.Types.ObjectId();
+        user.transactions.push(transaction_id);
         await user.save();
+        await Transaction.create([{
+            _id: transaction_id,
+            type: 'reward',
+            from: survey_id,
+            to: user_id,
+            from_name: survey.surveyParams.title,
+            to_name: user.username,
+            amount: survey.surveyParams.payout,
+            time: new Date().toISOString()
+        }], {session: session});
         const response = await Response.findById(response_id).session(session);
         response.complete = true;
         await response.save();
@@ -436,6 +589,7 @@ router.post('/taker/:survey_id', (req,res) => {
             if (Object.keys(req.body.survey_data).length > surveyM.getAllQuestions().length) return res.status(400).json({success: false, message: 'Too many question inputs.'});
             surveyM.data = req.body.survey_data;
             surveyM.clearIncorrectValues();
+            // comparing json to see if data is the same after clearing incorrect values
             // https://poopcode.com/compare-two-json-objects-ignoring-the-order-of-the-properties-in-javascript/
             if(!_.isEqual(surveyM.data, req.body.survey_data)) return res.status(400).json({success: false, message: 'Invalid question inputs.'});
             if (req.body.completing === true) {
@@ -449,6 +603,7 @@ router.post('/taker/:survey_id', (req,res) => {
                     Response.findOne({$and:[{'user':user._id}, {'survey':survey._id}]})
                         .exec()
                         .then(response => {
+                            // case: new response
                             if (!response) {
                                 const new_response = new Response({
                                     _id: new mongoose.Types.ObjectId(),
@@ -474,6 +629,7 @@ router.post('/taker/:survey_id', (req,res) => {
                                 });
                                 return; // promises fall through
                             }
+                            // case: updating response
                             if (response.complete === true) return res.status(400).json({success: false, message: 'Response already completed.'});
                             response.surveyData = req.body.survey_data;
                             response.last_modified = new Date().toISOString();

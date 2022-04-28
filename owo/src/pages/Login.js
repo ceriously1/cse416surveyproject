@@ -31,6 +31,8 @@ function Login() {
                 if (response.success === true) {
                     // https://stackoverflow.com/questions/70622541/how-can-i-use-previous-location-to-redirect-user-in-react-router-v6
                     navigate((state === null) ? '/' : state);
+                } else {
+                    alert(response.message);
                 }
             });
     }

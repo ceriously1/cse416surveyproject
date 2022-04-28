@@ -25,7 +25,8 @@ function SignUp() {
             ).then(res => {return res.json()})
             .then(response => {
                 console.log(response);
-                if (response.success === true) navigate('/user/login',{state:'/'});
+                if (response.success) navigate('/user/login',{state:'/'});
+                if (!response.success) alert(response.error);
             });
     }
 

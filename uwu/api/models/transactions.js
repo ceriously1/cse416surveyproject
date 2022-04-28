@@ -2,10 +2,13 @@ const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    from: {type: String, required: true}, // Not quite sure how algorand will be intergated. This is a placeholder for wallet address
-    to: {type: String, required: true},
-    date: {type: Date, required: true},
-    status: {type: Number, required: true},
+    type: {type: String, required: true},    // types: fund/defund/reward
+    from: {type: mongoose.Schema.Types.ObjectId, required: true}, // can be survey or user id
+    to: {type: mongoose.Schema.Types.ObjectId, required: true}, // can be survey or user id
+    from_name: {type: String, required: true},  // user's name or survey title
+    to_name: {type: String, required: true},    // user's name or survey title
+    amount: {type: Number, required: true, min: 0},
+    time: {type: Date, required: true}
 }, {versionKey: false});
 
 module.exports = mongoose.model('Transaction', transactionSchema, 'Transactions');

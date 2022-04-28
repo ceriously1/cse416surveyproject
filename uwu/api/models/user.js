@@ -9,11 +9,10 @@ const User = new Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     balance: { type: Number, default: 0, min: 0},
-    // !! these are the completed and incomplete answers !!
+    // responses include completed and incomplete responses
     responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response'}],
-    // surveys_responded includes not-completed surveys
-    surveys_responded: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Survey'}],
-    surveys_created: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Survey'}] // Self-created surveys
+    surveys_created: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Survey'}], // Self-created surveys
+    transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction'}]
 });
 
 User.plugin(passportLocalMongoose);
