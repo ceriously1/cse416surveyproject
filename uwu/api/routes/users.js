@@ -57,20 +57,17 @@ router.get('/logged', (req, res) => {
 // Note: you may get something like "websocket closed due to suspension", this is if you send a 304 I think
 router.get("/balance", (req, res, next) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
-        User.find({username: req.session.passport.user}).exec().then(user => {
-            if (user.length < 1) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'User no longer exists.'
-                });
-            }
-            // TO-DO get transaction history (I would get the id (user[0]._id) and query the db for all transactions with the id sorted by date)
-
-            //////
+        User.findOne({username: req.session.passport.user})
+        .select('_id balance transactions')
+        .populate('transactions')
+        .exec()
+        .then(user => {
+            if (!user) return res.status(404).json({success: false, message: 'User not found.'});
             res.status(200).json({
                 success: true,
-                message: "Balance found.",
-                balance: user[0].balance
+                message: "Balance and transaction history found.",
+                balance: user.balance,
+                transactions: user.transactions
             });
         }).catch(err => {
             console.log(err);

@@ -2,17 +2,19 @@
 
 import { useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
+import TransactionTable from '../components/transactiontable/TransactionTable.js';
 
 function Balance() {
     const navigate = useNavigate();
     // sets isLoading to "true"
     const [isLoading, setIsLoading] = useState(true);
     const [balance, setBalance] = useState(0);
+    const [transactions, setTransactions] = useState([]);
 
     // useEffect conditionally calls fetch so that it isn't called everytime a state is updated
     // the empty array at the end means that fetch will only be called when this page is first rendered
     // for other use cases, we can include "external variables" in the array to call useEffefct's function everytime the variables change
-    // WIP, still need to deal with client auth and error handling
+    // Gets balance and transaction history
     useEffect(() => {
         fetch('http://localhost:4000/user/balance',
             {
@@ -32,6 +34,7 @@ function Balance() {
                 console.log(data);
                 setIsLoading(false);
                 setBalance(data.balance);
+                setTransactions(data.transactions);
             })
     }, [navigate]);
 
@@ -45,6 +48,7 @@ function Balance() {
         <section>
             <h1>Balance</h1>
             <p>Balance: {balance}</p>
+            <TransactionTable transactions={transactions}/>
         </section>
     );
 }

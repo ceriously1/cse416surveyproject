@@ -99,7 +99,7 @@ function SurveyItem(props) {
         });
     }
 
-    // 
+    // funding active survey
     function fund() {
         const amountJSON = {
             amount: fundingRef.current.value
