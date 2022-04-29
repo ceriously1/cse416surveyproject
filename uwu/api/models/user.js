@@ -12,7 +12,8 @@ const User = new Schema({
     // responses include completed and incomplete responses
     responses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Response'}],
     surveys_created: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Survey'}], // Self-created surveys
-    transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction'}]
+    transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction'}],
+    algo_address: {type: String}
 });
 
 User.plugin(passportLocalMongoose);

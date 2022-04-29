@@ -5,11 +5,10 @@ function TransactionTable(props) {
             <th>Transaction Id</th>
             <th>Type</th>
             <th>From</th>
-            <th>Id</th>
             <th>To</th>
-            <th>Id</th>
             <th>Amount (mAlgos)</th>
             <th>Time</th>
+            <th>Success</th>
         </tr>
     }
 
@@ -19,11 +18,10 @@ function TransactionTable(props) {
             <td>{transaction._id}</td>
             <td>{transaction.type}</td>
             <td>{transaction.from_name}</td>
-            <td>{transaction.from}</td>
             <td>{transaction.to_name}</td>
-            <td>{transaction.to}</td>
             <td>{transaction.amount}</td>
             <td>{date.toLocaleDateString() + ' - ' + date.toLocaleTimeString()}</td>
+            <td>{transaction.success ? 'true': 'false'}</td>
         </tr>
     }
 

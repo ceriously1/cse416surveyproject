@@ -8,7 +8,8 @@ const transactionSchema = new mongoose.Schema({
     from_name: {type: String, required: true},  // user's name or survey title
     to_name: {type: String, required: true},    // user's name or survey title
     amount: {type: Number, required: true, min: 0},
-    time: {type: Date, required: true}
+    time: {type: Date, required: true},
+    success: {type: Boolean, default: true},
 }, {versionKey: false});
 
 module.exports = mongoose.model('Transaction', transactionSchema, 'Transactions');

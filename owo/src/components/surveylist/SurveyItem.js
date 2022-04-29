@@ -241,7 +241,7 @@ function SurveyItem(props) {
         {buttons()}
         {isFunding ? (<div>
             <label htmlFor='funding'>Amount</label>
-            <input type='number' required id='funding' ref={fundingRef}></input>
+            <input type='number' min='0' required id='funding' ref={fundingRef}></input>
             <button onClick={() => {fund()}}>Submit</button>
             <button onClick={() => {setIsFunding(false)}}>Cancel</button>
         </div>) : null}
