@@ -18,7 +18,6 @@ function Balance() {
     const mnemonicRef = useRef();
     const withdrawRef = useRef();
     const withdrawAddressRef = useRef();
-    const [toggle, setToggle] = useState(false);
 
 
     // useEffect conditionally calls fetch so that it isn't called everytime a state is updated
@@ -47,7 +46,7 @@ function Balance() {
                 setTransactions(data.transactions);
                 setWithdrawAddress(data.algo_address);
             })
-    }, [navigate, toggle]);
+    }, [navigate]);
 
     // returns the jsx element allowing users to select how much they want to deposit
     function depositElement() {

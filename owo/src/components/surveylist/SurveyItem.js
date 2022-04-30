@@ -74,7 +74,7 @@ function SurveyItem(props) {
     };
 
     // download results based on type
-    function download(type) {
+    function download() {
         fetch(`http://localhost:4000/survey/download/${survey._id}`, 
         {
             method: 'Get',
@@ -93,9 +93,34 @@ function SurveyItem(props) {
                 alert(response.message);
                 return;
             }
-            const questions = response.surveyQuestions.map(question => JSON.stringify(question)).toString();
-            const data = JSON.stringify(response.surveyData);
-            alert(questions.concat(data));
+            // name (id) -> title (question), names are the keys in answers[i]
+            const question_map = response.surveyQuestions;
+            const answers = response.surveyData;
+            if (answers[0] === null) {
+                alert('No responses.');
+                return;
+            };
+            let exportArray = [[]];
+            for (let i = 0; i < question_map.length; i++) {
+                exportArray[0].push([question_map[i].title]);
+            }
+            for (let i = 0; i < answers.length; i++) {
+                exportArray.push([]);
+                for (let j = 0; j < question_map.length; j++) {
+                    const entry = answers[i][question_map[j].name];
+                    exportArray[i+1].push(Array.isArray(entry) ? "\""+ entry.toString()+"\"": "\""+[entry].toString()+"\"");
+                }
+            }
+            // https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
+            let csvContent = "data:text/csv;charset=utf-8," + exportArray.map(e => e.join(",")).join("\n");
+            console.log(csvContent);
+            var encodedUri = encodeURI(csvContent);
+            var link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "survey_data.csv");
+            document.body.appendChild(link); 
+            link.click();
+            return;
         });
     }
 
@@ -133,14 +158,14 @@ function SurveyItem(props) {
             return <div>
                 <button onClick={() => {navigate(`/survey/view/${survey._id}`)}}>View</button>
                 <button onClick={() => {activate('deactivate')}}>Deactivate</button>
-                <button onClick={() => {download('json')}}>Download JSON</button>
+                <button onClick={() => {download()}}>Download CSV</button>
                 <button onClick={() => {setIsFunding(!isFunding);}}>Fund</button>
             </div>
         }
         if (surveyStatus === 'inactive') {
             return <div>
                 <button onClick={() => {navigate(`/survey/view/${survey._id}`)}}>View</button>
-                <button onClick={() => {download('json')}}>Download JSON</button>
+                <button onClick={() => {download()}}>Download CSV</button>
             </div>
         }
         if (surveyStatus === 'building') {
@@ -235,7 +260,6 @@ function SurveyItem(props) {
         }
     }
     
-    // fetch 
     return <div>
         {info()}
         {buttons()}

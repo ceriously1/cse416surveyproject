@@ -8,7 +8,7 @@ function TransactionTable(props) {
             <th>To</th>
             <th>Amount</th>
             <th>Time</th>
-            <th>Success</th>
+            <th>Algorand Transaction Success</th>
         </tr>
     }
 
@@ -21,7 +21,7 @@ function TransactionTable(props) {
             <td>{transaction.to_name}</td>
             <td>{transaction.amount}</td>
             <td>{date.toLocaleDateString() + ' - ' + date.toLocaleTimeString()}</td>
-            <td>{transaction.success ? 'true': 'false'}</td>
+            <td>{(transaction.type === 'withdraw' || transaction.type === 'deposit') ? (transaction.success ? 'true': 'false') : 'N/A'}</td>
         </tr>
     }
 

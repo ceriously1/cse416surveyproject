@@ -24,15 +24,14 @@ function Login() {
                 body: JSON.stringify(loginData)
             }
             ).then(res => {
+                if (res.status === 401) alert('Login failed. Check username or password.');
                 return res.json()
             })
             .then(response => {
                 console.log(response);
-                if (response.success === true) {
+                if (response.success) {
                     // https://stackoverflow.com/questions/70622541/how-can-i-use-previous-location-to-redirect-user-in-react-router-v6
                     navigate((state === null) ? '/' : state);
-                } else {
-                    alert(response.message);
                 }
             });
     }
