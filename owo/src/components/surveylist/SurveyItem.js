@@ -134,7 +134,7 @@ function SurveyItem(props) {
                 <button onClick={() => {navigate(`/survey/view/${survey._id}`)}}>View</button>
                 <button onClick={() => {activate('deactivate')}}>Deactivate</button>
                 <button onClick={() => {download('json')}}>Download JSON</button>
-                <button onClick={() => {setIsFunding(true);}}>Fund</button>
+                <button onClick={() => {setIsFunding(!isFunding);}}>Fund</button>
             </div>
         }
         if (surveyStatus === 'inactive') {
@@ -243,7 +243,7 @@ function SurveyItem(props) {
             <label htmlFor='funding'>Amount</label>
             <input type='number' min='0' required id='funding' ref={fundingRef}></input>
             <button onClick={() => {fund()}}>Submit</button>
-            <button onClick={() => {setIsFunding(false)}}>Cancel</button>
+            <button onClick={() => {setIsFunding(!isFunding)}}>Cancel</button>
         </div>) : null}
     </div>
 }

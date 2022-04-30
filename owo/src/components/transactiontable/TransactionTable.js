@@ -6,7 +6,7 @@ function TransactionTable(props) {
             <th>Type</th>
             <th>From</th>
             <th>To</th>
-            <th>Amount (mAlgos)</th>
+            <th>Amount</th>
             <th>Time</th>
             <th>Success</th>
         </tr>

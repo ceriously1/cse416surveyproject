@@ -15,9 +15,9 @@ function Balance() {
     const [withdrawAddress, setWithdrawAddress] = useState(null);
     // depositRef and witdrawRef refer to the amounts
     const depositRef = useRef();
+    const mnemonicRef = useRef();
     const withdrawRef = useRef();
     const withdrawAddressRef = useRef();
-    const [depositURI, setDepositURI] = useState(null);
     const [toggle, setToggle] = useState(false);
 
 
@@ -52,21 +52,30 @@ function Balance() {
     // returns the jsx element allowing users to select how much they want to deposit
     function depositElement() {
         return <div>
-            <label htmlFor='deposit'>Amount</label>
-            <input type='number' required id='deposit' ref={depositRef}></input>
-            <button onClick={() => {deposit()}}>Submit</button>
-            <button onClick={() => {setDepositing(false)}}>Cancel</button>
+            <div>
+                <label htmlFor='deposit'>Amount</label>
+                <input type='number' required id='deposit' ref={depositRef}></input>
+            </div>
+            <div>
+                <label htmlFor='mnemonic'>Mnemonic</label>
+                <input type='text' required id='mnemonic' ref={mnemonicRef}></input>
+            </div>
+            <div>
+                <button onClick={() => {deposit()}}>Submit</button>
+                <button onClick={() => {setDepositing(false)}}>Cancel</button>
+            </div>
         </div>
     }
 
     function deposit() {
         const amount = depositRef.current.value;
+        const mnemonic = mnemonicRef.current.value;
         fetch(`http://localhost:4000/user/deposit`, 
         {
             method: 'Post',
             headers: {'Content-Type': 'application/json'},
             credentials: 'include',
-            body: JSON.stringify({amount: amount})
+            body: JSON.stringify({amount: amount, mnemonic: mnemonic})
         }
         ).then(res => {
             return res.json()
@@ -79,7 +88,6 @@ function Balance() {
                 return;
             }
             if (response.success) {
-                setDepositURI(response.URI);
                 setDepositing(false);
             }
         });
@@ -88,7 +96,6 @@ function Balance() {
     function withdrawElement() {
         return <div>
             <div><b>1000 mAlgo fee added to entered amount.</b></div>
-            <div><b>Minimum amount is 1 mAlgo.</b></div>
             <div>
                 <label htmlFor='withdraw'>Amount</label>
                 <input type='number' required id='withdraw' ref={withdrawRef}></input>
@@ -139,10 +146,11 @@ function Balance() {
     return (
         <section>
             <h1>Balance</h1>
-            <p>Balance: {balance}</p>
-            <div><button onClick={() => {setDepositing(true)}}>Deposit</button></div>
+            <p>Balance: {balance} mAlgos</p>
+            <div><button onClick={() => {setDepositing(!depositing)}}>Deposit</button></div>
             <div>{depositing? depositElement() : null}</div>
-            <div><button onClick={() => {setWithdrawing(true)}}>Withdraw</button></div>
+            <div></div>
+            <div><button onClick={() => {setWithdrawing(!withdrawing)}}>Withdraw</button></div>
             <div>{withdrawing? withdrawElement() : null}</div>
             <TransactionTable transactions={transactions}/>
         </section>
