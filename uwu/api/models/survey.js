@@ -19,6 +19,6 @@ const surveySchema = new mongoose.Schema({
     date_published: {type: Date},
     last_modified: {type: Date, required: true},
     date_deactivated: {type: Date}
-}, {versionKey: false});
+});
 
 module.exports = mongoose.model('Survey', surveySchema, 'Surveys');

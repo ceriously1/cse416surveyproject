@@ -9,6 +9,6 @@ const responseSchema = new mongoose.Schema({
     complete: { type: Boolean, default: false}, // complete when all required questions are answered
     date_completed: {type: Date},
     last_modified: { type: Date, required: true}    // use: new Date().toISOString() : https://stackoverflow.com/questions/7675549/how-do-i-update-a-property-with-the-current-date-in-a-mongoose-schema-on-every-s
-}, {versionKey: false});
+});
 
 module.exports = mongoose.model('Response', responseSchema, 'Responses');

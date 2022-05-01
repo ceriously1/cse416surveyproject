@@ -76,7 +76,7 @@ function Published() {
 
     function statusSwapElement() {
         function statusSwap(status) {
-            if (surveyStatus != status) {
+            if (surveyStatus !== status) {
                 if (status === 'active') setSortBy('date_published');
                 if (status === 'inactive') setSortBy('date_deactivated');
                 if (status === 'building') setSortBy('last_modified');

@@ -76,7 +76,7 @@ function Progress() {
 
     function statusSwapElement() {
         function statusSwap(status) {
-            if (surveyStatus != status) {
+            if (surveyStatus !== status) {
                 setSurveyStatus(status);
                 setPageIndex(0);
                 setIsLoading(true);

@@ -10,6 +10,6 @@ const transactionSchema = new mongoose.Schema({
     amount: {type: Number, required: true, min: 0},
     time: {type: Date, required: true},
     success: {type: Boolean, default: true},
-}, {versionKey: false});
+});
 
 module.exports = mongoose.model('Transaction', transactionSchema, 'Transactions');
