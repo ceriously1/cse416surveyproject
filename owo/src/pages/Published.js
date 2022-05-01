@@ -2,6 +2,8 @@ import {useNavigate} from 'react-router-dom';
 import {useState, useEffect} from 'react';
 import SurveyList from '../components/surveylist/SurveyList.js';
 
+import globalStyles from './global.module.css';
+
 function Published() {
     const navigate = useNavigate();
     // to give a response to the user when waiting for server response
@@ -94,11 +96,13 @@ function Published() {
 
     return <div>
         <h1>Surveys Published</h1>
+        <div className={globalStyles.shift}>
         <div><button onClick={() => {navigate('/survey/builder/0')}}>Create New Survey</button></div>
         {statusSwapElement()}
         {sortSelectElement()}
         <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
         {pageSwapElement()}
+        </div>
     </div>;
 }
 

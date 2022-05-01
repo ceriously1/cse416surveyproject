@@ -3,6 +3,8 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {Survey} from 'survey-react-ui';
 import {Model} from 'survey-core';
 
+import globalStyles from './global.module.css';
+
 function Taker() {
     const navigate = useNavigate();
     // remember to deal with the case where the survey is deactivated
@@ -100,14 +102,16 @@ function Taker() {
     
     return <div>
         <h1>Survey Taker</h1>
-        <div>Survey Title: {surveyParams.title}</div>
-        <div>Description: {surveyParams.description}</div>
-        <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>
-        <div>Payout: {surveyParams.payout} microAlgos</div>
-        <div>Reserve: {surveyParams.reserved} microAlgos</div>
-        {(surveyParams.payout > surveyParams.reserved)? <div>Warning. Survey payout is currently greater than reserve.</div>:null}
-        <div><Survey model={survey}/></div>
-        <div><button onClick={() => {saveResponse()}}>Save Response</button></div>
+        <div className={globalStyles.shift}>
+            <div>Survey Title: {surveyParams.title}</div>
+            <div>Description: {surveyParams.description}</div>
+            <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>
+            <div>Payout: {surveyParams.payout} microAlgos</div>
+            <div>Reserve: {surveyParams.reserved} microAlgos</div>
+            {(surveyParams.payout > surveyParams.reserved)? <div>Warning. Survey payout is currently greater than reserve.</div>:null}
+            <div><Survey model={survey}/></div>
+            <div><button onClick={() => {saveResponse()}}>Save Response</button></div>
+        </div>
     </div>;
 }
 

@@ -2,6 +2,8 @@ import {useNavigate} from 'react-router-dom';
 import {useState, useEffect} from 'react';
 import SurveyList from '../components/surveylist/SurveyList.js';
 
+import globalStyles from './global.module.css';
+
 function Progress() {
     const navigate = useNavigate();
     // to give a response to the user when waiting for server response
@@ -90,10 +92,12 @@ function Progress() {
 
     return <div>
         <h1>Survey Progress</h1>
-        {statusSwapElement()}
-        {sortSelectElement()}
-        <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
-        {pageSwapElement()}
+        <div className={globalStyles.shift}>
+            {statusSwapElement()}
+            {sortSelectElement()}
+            <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
+            {pageSwapElement()}
+        </div>
     </div>;
 }
 

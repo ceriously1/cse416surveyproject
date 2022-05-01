@@ -1,6 +1,8 @@
 import {useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import globalStyles from './global.module.css';
+
 function SignUp() {
     const navigate = useNavigate();
     const usernameRef = useRef();
@@ -34,6 +36,7 @@ function SignUp() {
     <div>
         <h1>Sign Up</h1>
         <form onSubmit={SignUpHandler}>
+            <div className={globalStyles.center}>
             <div>
                 <label htmlFor='username'>Username</label>
                 <input type='text' required id='username' ref={usernameRef}></input>
@@ -47,6 +50,7 @@ function SignUp() {
                 <input type='text' required id='email' ref={emailRef}></input>
             </div>
             <div><button>Sign Up</button></div>
+            </div>
         </form>
     </div>
     );

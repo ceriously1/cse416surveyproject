@@ -1,0 +1,13 @@
+/* https://stackoverflow.com/questions/114543/how-to-horizontal */
+.shift {
+    width:50%;
+    margin: 0 auto;
+}
+
+.shift2 {
+    padding-left: 42.5%;
+}
+
+.center {
+    text-align: center;
+}

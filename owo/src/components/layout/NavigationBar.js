@@ -1,5 +1,6 @@
 import {useNavigate} from 'react-router-dom';
 import {useState, useEffect} from 'react';
+import styles from './NavigationBar.module.css';
 
 function NavigationBar() {
     const navigate = useNavigate();
@@ -39,24 +40,24 @@ function NavigationBar() {
     }, [navigate]);
     
     if (logged) {
-        return <header>
-            <nav>
-            <button onClick={() => {navigate('/')}}>Home</button>
-            <button onClick={() => {navigate('/user/balance')}}>Balance</button>
-            <button onClick={() => {navigate('/survey/progress')}}>Survey Progress</button>
-            <button onClick={() => {navigate('/survey/published')}}>Surveys Published</button>
-            <button onClick={() => {navigate('/survey/search')}}>Search</button>
-            <button onClick={() => {logout()}}>Log Out</button>
+        return <header className={styles.header}>
+            <nav className={styles.nav}>
+            <button className={styles.button} onClick={() => {navigate('/')}}>Home</button>
+            <button className={styles.button} onClick={() => {navigate('/user/balance')}}>Balance</button>
+            <button className={styles.button} onClick={() => {navigate('/survey/progress')}}>Survey Progress</button>
+            <button className={styles.button} onClick={() => {navigate('/survey/published')}}>Surveys Published</button>
+            <button className={styles.button} onClick={() => {navigate('/survey/search')}}>Search</button>
+            <button className={styles.button} onClick={() => {logout()}}>Log Out</button>
             </nav>
         </header>
     }
 
-    return <header>
+    return <header className={styles.header}>
         <nav>
-            <button onClick={() => {navigate('/')}}>Home</button>
-            <button onClick={() => {navigate('/user/signup')}}>Sign Up</button>
-            <button onClick={() => {navigate('/user/login')}}>Login</button>
-            <button onClick={() => {navigate('/survey/search')}}>Search</button>
+            <button className={styles.button} onClick={() => {navigate('/')}}>Home</button>
+            <button className={styles.button} onClick={() => {navigate('/user/signup')}}>Sign Up</button>
+            <button className={styles.button} onClick={() => {navigate('/user/login')}}>Login</button>
+            <button className={styles.button} onClick={() => {navigate('/survey/search')}}>Search</button>
         </nav>
     </header>;
 }

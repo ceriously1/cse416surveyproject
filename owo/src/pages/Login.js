@@ -1,6 +1,8 @@
 import {useRef} from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+import globalStyles from './global.module.css';
+
 function Login() {
     const navigate = useNavigate();
     const state = useLocation().state;
@@ -40,15 +42,17 @@ function Login() {
     <div>
         <h1>Login</h1>
         <form onSubmit={LoginHandler}>
-            <div>
-                <label htmlFor='userLogin'>User</label>
-                <input type='text' required id='userLogin' ref={userLoginRef}></input>
+            <div className={globalStyles.center}>
+                <div>
+                    <label htmlFor='userLogin'>User</label>
+                    <input type='text' required id='userLogin' ref={userLoginRef}></input>
+                </div>
+                <div>
+                    <label htmlFor='password'>Password</label>
+                    <input type='password' required id='password' ref={passwordRef}></input>
+                </div>
+                <div><button>Login</button></div>
             </div>
-            <div>
-                <label htmlFor='password'>Password</label>
-                <input type='password' required id='password' ref={passwordRef}></input>
-            </div>
-            <div><button>Login</button></div>
         </form>
     </div>
     );

@@ -3,6 +3,8 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {Survey} from 'survey-react-ui';
 import {Model} from 'survey-core';
 
+import globalStyles from './global.module.css';
+
 function View() {
     const navigate = useNavigate();
     const {survey_id} = useParams();
@@ -47,15 +49,17 @@ function View() {
     
     return <div>
         <h1>Survey Viewer</h1>
-        <div>Survey Title: {surveyParams.title}</div>
-        <div>Description: {surveyParams.description}</div>
-        <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>
-        <div>Payout: {surveyParams.payout} microAlgos</div>
-        <div>Reserve: {surveyParams.reserved} microAlgos</div>
-        <div><Survey model={survey}/></div>
-        <div>
-            <button onClick={() => {survey.prevPage()}}>Prev Page</button>
-            <button onClick={() => {survey.nextPage()}}>Next Page</button>
+        <div className={globalStyles.shift}>
+            <div>Survey Title: {surveyParams.title}</div>
+            <div>Description: {surveyParams.description}</div>
+            <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>
+            <div>Payout: {surveyParams.payout} microAlgos</div>
+            <div>Reserve: {surveyParams.reserved} microAlgos</div>
+            <div><Survey model={survey}/></div>
+            <div>
+                <button onClick={() => {survey.prevPage()}}>Prev Page</button>
+                <button onClick={() => {survey.nextPage()}}>Next Page</button>
+            </div>
         </div>
     </div>;
 }
