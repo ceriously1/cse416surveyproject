@@ -266,9 +266,11 @@ router.get('/published/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res)
 router.get('/search/:sortBy/:pageIndex/:order/:query?', (req, res) => {
     let {query, sortBy, pageIndex, order} = req.params;
     if (typeof query === 'undefined') query = '';
+    const orderNum = order === 'increasing' ? 1 : -1 ;
     // https://stackoverflow.com/questions/13272824/combine-two-or-queries-with-and-in-mongoose
-    Survey.find({$and:[{$or:[{'surveyParams.title':{'$regex':query,'$options':'i'}}, {'surveyParams.description':{'$regex':query,'$options':'i'}}]}, {'published':true}, {'deactivated':false}]})
-        .select('-surveyJSON').sort({'date_published': -1}).exec().then(surveys => {
+    Survey.find({$and:[{$or:[{'surveyParams.title':{'$regex':query,'$options':'i'}}, {'surveyParams.description':{'$regex':query,'$options':'i'}}, {'publisherName':{'$regex':query,'$options':'i'}}]}, {'published':true}, {'deactivated':false}]})
+        .select('-surveyJSON').sort({[sortBy]: orderNum}).exec().then(surveys => {
+            if (sortBy === 'completions') surveys.sort((s1, s2) => {return orderNum*(s1.responses.length - s2.responses.length)});
             const totalNumSurveys = surveys.length;
             let actualPageIndex = parseInt(pageIndex);
             if ((actualPageIndex+1)*surveysPerPage > totalNumSurveys) actualPageIndex = parseInt((totalNumSurveys-1)/surveysPerPage); 

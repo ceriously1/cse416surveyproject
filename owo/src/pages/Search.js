@@ -46,6 +46,24 @@ function Search() {
         </div>
     }
 
+    function sortSelectElement() {
+        // https://stackoverflow.com/questions/28868071/onchange-event-using-react-js-for-drop-down
+        return <div>
+            Sort by
+            <select onChange={e => {setSortBy(e.target.value); setPageIndex(0);}}>
+                <option value='date_published'>Date Published</option>
+                <option value='completions'>Completions</option>
+                <option value='surveyParams.title'>Title</option>
+                <option value='surveyParams.payout'>Payout</option>
+                <option value='surveyParams.reserved'>Reserved</option>
+            </select>
+            <select onChange={e => {setOrder(e.target.value); setPageIndex(0);}}>
+                <option value='decreasing'>Decreasing</option>
+                <option value='increasing'>Increasing</option>
+            </select>
+        </div>
+    }
+
     function pageSwapElement() {
         const displayPrev = (pageIndex > 0) && (surveys.length > 0);
         const displayNext = ((pageIndex+1)*surveysPerPage < totalNumSurveys);
@@ -58,6 +76,7 @@ function Search() {
 
     return <div>
         {searchElement()}
+        {sortSelectElement()}
         <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
         {pageSwapElement()}
     </div>
