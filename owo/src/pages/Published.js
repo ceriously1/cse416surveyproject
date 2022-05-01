@@ -7,7 +7,7 @@ function Published() {
     // to give a response to the user when waiting for server response
     const [isLoading, setIsLoading] = useState(true);
     // type and storage of surveys
-    const [surveyStatus, setSurveyStatus] = useState('in-progress');
+    const [surveyStatus, setSurveyStatus] = useState('active');
     const [surveys, setSurveys] = useState([]);
     // for refreshing
     const [toggle, setToggle] = useState(false);
@@ -16,7 +16,7 @@ function Published() {
     const [totalNumSurveys, setTotalNumSurveys] = useState(0);
     const surveysPerPage = 10;
     // for sorting
-    const [sortBy, setSortBy] = useState('last_modified');
+    const [sortBy, setSortBy] = useState('date_published');
     const [order, setOrder] = useState('decreasing');
 
     useEffect(() => {
@@ -49,9 +49,10 @@ function Published() {
         return <div>
             Sort by
             <select onChange={e => {setSortBy(e.target.value); setPageIndex(0);}}>
-                <option value='last_modified'>Last Modified</option>
-                <option value='date_published'>Date Published</option>
-                <option value='completions'>Completions</option>
+                {surveyStatus === 'building' ? <option value='last_modified'>Last Modified</option> : null}
+                {surveyStatus === 'inactive' ? <option value='date_deactivated'>Date Deactivated</option> : null}
+                {surveyStatus !== 'building' ? <option value='date_published'>Date Published</option> : null}
+                {surveyStatus !== 'building' ? <option value='completions'>Completions</option> : null}
                 <option value='title'>Title</option>
                 <option value='payout'>Payout</option>
                 <option value='reserved'>Reserved</option>
@@ -76,6 +77,9 @@ function Published() {
     function statusSwapElement() {
         function statusSwap(status) {
             if (surveyStatus != status) {
+                if (status === 'active') setSortBy('date_published');
+                if (status === 'inactive') setSortBy('date_deactivated');
+                if (status === 'building') setSortBy('last_modified');
                 setSurveyStatus(status);
                 setPageIndex(0);
                 setIsLoading(true);

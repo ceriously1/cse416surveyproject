@@ -197,34 +197,38 @@ function SurveyItem(props) {
         // can use switch, but that doesn't really matter because there aren't particulary many variations of surveyStatus
         const datePublished = new Date(survey.date_published);
         const datePublishedRead = datePublished.toLocaleDateString() + ' - ' + datePublished.toLocaleTimeString();
+        const dateDeactivated = new Date(survey.date_deactivated);
+        const dateDeactivateRead = dateDeactivated.toLocaleDateString() + ' - ' + dateDeactivated.toLocaleTimeString();
         const lastModified = new Date(survey.last_modified);
         const lastModifiedRead = lastModified.toLocaleDateString() + ' - ' + lastModified.toLocaleTimeString();
+        const rLastModified = new Date(survey.r_last_modified);
+        const rLastModifiedRead = rLastModified.toLocaleDateString() + ' - ' + rLastModified.toLocaleTimeString();
+        const rDateCompleted = new Date(survey.r_date_modified);
+        const rDateCompletedRead = rDateCompleted.toLocaleDateString() + ' - ' + rDateCompleted.toLocaleTimeString();
         if (surveyStatus === 'active') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
+                <div>Date Published - {datePublishedRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
-                <div>Date Published - {datePublishedRead}</div>
             </div>
         }
         if (surveyStatus === 'inactive') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
+                <div>Date Published - {datePublishedRead}</div>
+                <div>Date Deactivated - {dateDeactivateRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
-                <div>Date Published - {datePublishedRead}</div>
             </div>
         }
         if (surveyStatus === 'building') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Last Modified - {lastModifiedRead}</div>
@@ -234,12 +238,12 @@ function SurveyItem(props) {
             return <div>
                 <div>Title - {surveyParams.title}</div>
                 <div>Publisher - {survey.publisherName}</div>
+                <div>Date Published - {datePublishedRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
-                <div>Date Published - {datePublishedRead}</div>
+                <div>Last Modified - {rLastModifiedRead}</div>
             </div>
         }
         if (surveyStatus === 'history') {
@@ -247,12 +251,14 @@ function SurveyItem(props) {
             return <div>
                 <div>Title - {surveyParams.title}</div>
                 <div>Publisher - {survey.publisherName}</div>
+                <div>Date Published - {datePublishedRead}</div>
+                <div>Date Deactivated - {dateDeactivateRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
-                <div>Date Published - {datePublishedRead}</div>
+                <div>Last Modified - {rLastModifiedRead}</div>
+                <div>Date Completed - {rDateCompletedRead}</div>
             </div>
         }
         if (surveyStatus === 'search') {

@@ -202,6 +202,7 @@ router.get('/progress/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res) 
         function compareResponses(r1, r2) {
             if (sortBy === 'title') return orderNum*(r1.survey.surveyParams.title > r2.survey.surveyParams.title ? 1 : -1);
             if (sortBy === 'date_published') return orderNum*(new Date(r1.survey.date_published) - new Date(r2.survey.date_published));
+            if (sortBy === 'date_completed') return orderNum*(new Date(r1.date_completed) - new Date(r2.date_completed));
             if (sortBy === 'completions') return orderNum*(r1.survey.responses.length - r2.survey.responses.length);
             if (sortBy === 'payout') return orderNum*(r1.survey.surveyParams.payout - r2.survey.surveyParams.payout);
             if (sortBy === 'reserved') return orderNum*(r1.survey.surveyParams.reserved - r2.survey.surveyParams.reserved);
@@ -213,10 +214,9 @@ router.get('/progress/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res) 
         if ((actualPageIndex+1)*surveysPerPage > totalNumSurveys) actualPageIndex = parseInt((totalNumSurveys-1)/surveysPerPage); 
         if (actualPageIndex*surveysPerPage < 0) actualPageIndex = 0;
         return res.status(200).json({
-            surveys: surveysMatched
+            responses: surveysMatched
                 .sort((r1, r2) => compareResponses(r1,r2))
-                .slice(actualPageIndex*surveysPerPage, (actualPageIndex+1)*surveysPerPage)
-                .map(response => response.survey),
+                .slice(actualPageIndex*surveysPerPage, (actualPageIndex+1)*surveysPerPage),
             totalNumSurveys: totalNumSurveys,
             actualPageIndex: actualPageIndex
         });
@@ -239,6 +239,7 @@ router.get('/published/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res)
         function compareSurveys(s1, s2) {
             if (sortBy === 'title') return orderNum*(s1.surveyParams.title > s2.surveyParams.title ? 1 : -1);
             if (sortBy === 'date_published') return orderNum*(new Date(s1.date_published) - new Date(s2.date_published));
+            if (sortBy === 'date_deactivated') return orderNum*(new Date(s1.date_deactivated) - new Date(s2.date_deactivated));
             if (sortBy === 'completions') return orderNum*(s1.responses.length - s2.responses.length);
             if (sortBy === 'payout') return orderNum*(s1.surveyParams.payout - s2.surveyParams.payout);
             if (sortBy === 'reserved') return orderNum*(s1.surveyParams.reserved - s2.surveyParams.reserved);
@@ -256,72 +257,6 @@ router.get('/published/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res)
             actualPageIndex: actualPageIndex
         });
     }).catch(error =>{console.log(error); return res.status(500).json({message: error});});
-});
-
-// generic survey list acquiring thing
-// sorting should be done on front end because we're giving them everything
-router.get('/list/:surveyStatus/:sortBy/:pageIndex', (req, res) => {
-    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
-    const {surveyStatus, sortBy, pageIndex} = req.params;
-    let options = {path: '', match: {}};
-    if (surveyStatus === 'active') {
-        options.path = 'surveys_created';
-        options.match = {published: {$eq: true}, deactivated: {$eq: false}};
-    }
-    else if (surveyStatus === 'inactive') {
-        options.path = 'surveys_created';
-        options.match = {published: {$eq: true}, deactivated: {$eq: true}};
-    }
-    else if (surveyStatus === 'building') {
-        options.path = 'surveys_created';
-        options.match = {published: {$eq: false}, deactivated: {$eq: false}};
-    }
-    else if (surveyStatus === 'in-progress') {
-        options.path = 'responses';
-        options.match = {complete: {$eq: false}};
-        options.select = 'survey';
-        // https://stackoverflow.com/questions/36996384/how-to-populate-nested-entities-in-mongoose
-        options.populate =[{
-            path: 'survey',
-            // matching here can fill response.survey with null, just filter based on deactivated
-            // maybe we could move the following match up?
-            // match: {published: {$eq: true}, deactivated: {$eq: false}}
-        }];
-    }
-    else if (surveyStatus === 'history') {
-        options.path = 'responses';
-        options.select = 'survey complete';
-        options.populate =[{
-            path: 'survey',
-            //match: {published: {$eq: true}}
-        }];
-    }
-    else {
-        console.log(surveyStatus);
-        return res.status(400).json({message: 'Invalid survey status.'});
-    }
-    User.findOne({username: req.session.passport.user})
-        .select('_id')
-        .populate(options)
-        .exec()
-        .then(user => {
-            if (!user) return res.status(404).json({message: 'User not found.'});
-            if (surveyStatus === 'active' || surveyStatus === 'inactive' || surveyStatus === 'building') {
-                return res.status(201).json({message: 'Surveys found.', surveys: user.surveys_created});
-            }
-            if (surveyStatus === 'in-progress' || surveyStatus === 'history') {
-                if (surveyStatus === 'history') {
-                    const response_list = user.responses.filter(response => (response.complete || response.survey.deactivated));
-                    return res.status(201).json({message: 'Surveys found.', surveys:response_list.map(response => response.survey)});
-                }
-                return res.status(201).json({message: 'Surveys found.', surveys:user.responses.filter(response => !response.survey.deactivated).map(response => response.survey)});
-            }
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
 });
 
 // https://stackoverflow.com/questions/26814456/how-to-get-all-the-values-that-contains-part-of-a-string-using-mongoose-find
@@ -401,6 +336,7 @@ async function transact_deactivate(user_id, survey_id) {
     try {
         const survey = await Survey.findById(survey_id).session(session);
         survey.deactivated = true;
+        survey.date_deactivated = new Date().toISOString();
         const amount = survey.surveyParams.reserved;
         survey.surveyParams.reserved = 0;
         await survey.save();
@@ -626,6 +562,7 @@ async function transact_completing(survey_id, user_id, response_id) {
         }], {session: session});
         const response = await Response.findById(response_id).session(session);
         response.complete = true;
+        response.date_completed = new Date().toISOString();
         await response.save();
         await session.commitTransaction();
         transacted = true;

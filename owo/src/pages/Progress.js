@@ -35,7 +35,7 @@ function Progress() {
             }
             console.log(data);
             setIsLoading(false);
-            setSurveys(data.surveys);
+            setSurveys(data.responses.map(response => Object.assign(response.survey, {r_date_completed: response.date_completed, r_last_modified: response.last_modified})));
             setTotalNumSurveys(data.totalNumSurveys);
             setPageIndex(data.actualPageIndex);
         }) 
@@ -49,6 +49,8 @@ function Progress() {
             Sort by
             <select onChange={e => {setSortBy(e.target.value); setPageIndex(0);}}>
                 <option value='last_modified'>Last Modified</option>
+                {surveyStatus === 'history' ? <option value='date_completed'>Date Completed</option> : null}
+                {surveyStatus === 'history' ? <option value='date_deactivated'>Date Deactivated</option> : null}
                 <option value='date_published'>Date Published</option>
                 <option value='completions'>Completions</option>
                 <option value='title'>Title</option>

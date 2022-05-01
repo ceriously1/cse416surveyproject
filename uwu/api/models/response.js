@@ -7,6 +7,7 @@ const responseSchema = new mongoose.Schema({
     // include validation somehow on the server to prevent any user from bricking this
     surveyData: {type: Object, default:{}},   // you should be able to get question indices through the surveyJSON after populating survey
     complete: { type: Boolean, default: false}, // complete when all required questions are answered
+    date_completed: {type: Date},
     last_modified: { type: Date, required: true}    // use: new Date().toISOString() : https://stackoverflow.com/questions/7675549/how-do-i-update-a-property-with-the-current-date-in-a-mongoose-schema-on-every-s
 }, {versionKey: false});
 
