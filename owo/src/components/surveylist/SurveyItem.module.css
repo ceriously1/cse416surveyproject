@@ -1,22 +1,10 @@
-/* https://stackoverflow.com/questions/114543/how-to-horizontal */
-.shift {
-    width:50%;
-    margin: 0 auto;
-}
-
-.shift2 {
-    padding-left: 42.5%;
-}
-
-.center {
-    text-align: center;
-}
-
 .header {
     overflow-x: scroll;
     border-style:solid;
     border-color:cadetblue;
     border-width: 1px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     margin-top: 10px;
     padding: 5px;
 }
@@ -29,7 +17,7 @@
     border-width: 1px;
     border-top-style: none;
     border-bottom-style: none;
-    padding: 5px;   
+    padding: 5px;
 }
 
 .meta {
@@ -38,5 +26,17 @@
     border-color: cadetblue;
     border-width: 1px;
     border-top-style: none;
+    border-bottom-style: none;
     padding: 5px;
+}
+
+.footer {
+    border-style: solid;
+    border-color: cadetblue;
+    border-width: 1px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    margin-bottom: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
 }

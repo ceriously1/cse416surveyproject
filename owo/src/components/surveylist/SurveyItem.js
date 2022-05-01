@@ -1,6 +1,9 @@
 import {useNavigate} from 'react-router-dom';
 import {useState, useRef} from 'react';
 
+import styles from './SurveyItem.module.css';
+import './si.css';
+
 function SurveyItem(props) {
     const navigate = useNavigate();
     const [isFunding,setIsFunding] = useState(false);
@@ -155,7 +158,7 @@ function SurveyItem(props) {
 
     function buttons() {
         if (surveyStatus === 'active') {
-            return <div>
+            return <div className={styles.footer}>
                 <button onClick={() => {navigate(`/survey/view/${survey._id}`)}}>View</button>
                 <button onClick={() => {activate('deactivate')}}>Deactivate</button>
                 <button onClick={() => {download()}}>Download CSV</button>
@@ -163,31 +166,31 @@ function SurveyItem(props) {
             </div>
         }
         if (surveyStatus === 'inactive') {
-            return <div>
+            return <div className={styles.footer}>
                 <button onClick={() => {navigate(`/survey/view/${survey._id}`)}}>View</button>
                 <button onClick={() => {download()}}>Download CSV</button>
             </div>
         }
         if (surveyStatus === 'building') {
-            return <div>
+            return <div className={styles.footer}>
                 <button onClick={() => {navigate(`/survey/builder/${survey._id}`)}}>Continue</button>
                 <button onClick={() => {activate('activate')}}>Activate</button>
                 <button onClick={() => {deleteBuild()}}>Delete</button>
             </div>
         }
         if (surveyStatus === 'in-progress') {
-            return <div>
+            return <div className={styles.footer}>
                 <button onClick={() => {navigate(`/survey/taker/${survey._id}`)}}>Continue</button>
                 <button onClick={() => {deleteResponse()}}>Delete</button>
             </div>
         }
         if (surveyStatus === 'history') {
-            return <div>
+            return <div className={styles.footer}>
                 <button onClick={() => {navigate(`/survey/view/${survey._id}`)}}>View</button>
             </div>
         }
         if (surveyStatus === 'search') {
-            return <div>
+            return <div className={styles.footer}>
                 <button onClick={() => {navigate(`/survey/taker/${survey._id}`)}}>Take</button>
             </div>
         }
@@ -207,69 +210,87 @@ function SurveyItem(props) {
         const rDateCompletedRead = rDateCompleted.toLocaleDateString() + ' - ' + rDateCompleted.toLocaleTimeString();
         if (surveyStatus === 'active') {
             return <div>
-                <div>Title - {surveyParams.title}</div>
-                <div>Date Published - {datePublishedRead}</div>
-                <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} mAlgos</div>
-                <div>Reserve - {surveyParams.reserved} mAlgos</div>
-                <div>Completions - {survey.responses.length}</div>
+                <div className={styles.header}>
+                    <div><i>Title:</i> {surveyParams.title}</div>
+                    <div><i>Date Published:</i> {datePublishedRead}</div>
+                </div>
+                <div className={styles.desc}><i>Description:</i> {surveyParams.description}</div>
+                <div className={styles.meta}>
+                    <div><i>Payout:</i> {surveyParams.payout} mAlgos,   <i>Reserve:</i> {surveyParams.reserved} mAlgos</div>
+                    <div><i>Completions:</i> {survey.responses.length}</div>
+                </div>
             </div>
         }
         if (surveyStatus === 'inactive') {
             return <div>
-                <div>Title - {surveyParams.title}</div>
-                <div>Date Published - {datePublishedRead}</div>
-                <div>Date Deactivated - {dateDeactivateRead}</div>
-                <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} mAlgos</div>
-                <div>Completions - {survey.responses.length}</div>
+                <div className={styles.header}>
+                    <div><i>Title:</i> {surveyParams.title}</div>
+                    <div><i>Date Published:</i> {datePublishedRead}</div>
+                    <div><i>Date Deactivated:</i> {dateDeactivateRead}</div>
+                </div>
+                <div className={styles.desc}><i>Description:</i> {surveyParams.description}</div>
+                <div className={styles.meta}>
+                    <div><i>Payout:</i> {surveyParams.payout} mAlgos,   <i>Reserve:</i> {surveyParams.reserved} mAlgos</div>
+                    <div><i>Completions:</i> {survey.responses.length}</div>
+                </div>
             </div>
         }
         if (surveyStatus === 'building') {
             return <div>
-                <div>Title - {surveyParams.title}</div>
-                <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} mAlgos</div>
-                <div>Reserve - {surveyParams.reserved} mAlgos</div>
-                <div>Last Modified - {lastModifiedRead}</div>
+                <div className={styles.header}><i>Title:</i> {surveyParams.title}</div>
+                <div className={styles.desc}><i>Description:</i> {surveyParams.description}</div>
+                <div className={styles.meta}>
+                    <div><i>Payout:</i> {surveyParams.payout} mAlgos,   <i>Reserve:</i> {surveyParams.reserved} mAlgos</div>
+                    <div><i>Completions:</i> {survey.responses.length}</div>
+                    <div><i>Last Modified:</i> {lastModifiedRead}</div>
+                </div>
             </div>
         }
         if (surveyStatus === 'in-progress') {
             return <div>
-                <div>Title - {surveyParams.title}</div>
-                <div>Publisher - {survey.publisherName}</div>
-                <div>Date Published - {datePublishedRead}</div>
-                <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} mAlgos</div>
-                <div>Reserve - {surveyParams.reserved} mAlgos</div>
-                <div>Completions - {survey.responses.length}</div>
-                <div>Last Modified - {rLastModifiedRead}</div>
+                <div className={styles.header}>
+                    <div><i>Title:</i> {surveyParams.title}</div>
+                    <div><i>Publisher:</i> {survey.publisherName}</div>
+                    <div><i>Date Published:</i> {datePublishedRead}</div>
+                </div>
+                <div className={styles.desc}><i>Description:</i> {surveyParams.description}</div>
+                <div className={styles.meta}>
+                    <div><i>Payout:</i> {surveyParams.payout} mAlgos,   <i>Reserve:</i> {surveyParams.reserved} mAlgos</div>
+                    <div><i>Completions:</i> {survey.responses.length}</div>
+                    <div><i>Last Modified:</i> {rLastModifiedRead}</div>
+                </div>
             </div>
         }
         if (surveyStatus === 'history') {
             // add Completed later
             return <div>
-                <div>Title - {surveyParams.title}</div>
-                <div>Publisher - {survey.publisherName}</div>
-                <div>Date Published - {datePublishedRead}</div>
-                <div>Date Deactivated - {dateDeactivateRead}</div>
-                <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} mAlgos</div>
-                <div>Reserve - {surveyParams.reserved} mAlgos</div>
-                <div>Completions - {survey.responses.length}</div>
-                <div>Last Modified - {rLastModifiedRead}</div>
-                <div>Date Completed - {rDateCompletedRead}</div>
+                <div className={styles.header}>
+                    <div><i>Title:</i> {surveyParams.title}</div>
+                    <div><i>Publisher:</i> {survey.publisherName}</div>
+                    <div><i>Date Published:</i> {datePublishedRead}</div>
+                    <div><i>Date Deactivated:</i> {dateDeactivateRead}</div>
+                </div>
+                <div className={styles.desc}><i>Description:</i> {surveyParams.description}</div>
+                <div className={styles.meta}>
+                    <div><i>Payout:</i> {surveyParams.payout} mAlgos,   <i>Reserve:</i> {surveyParams.reserved} mAlgos</div>
+                    <div><i>Completions:</i> {survey.responses.length}</div>
+                    <div><i>Last Modified:</i> {rLastModifiedRead}</div>
+                    <div><i>Date Completed:</i> {rDateCompletedRead}</div>
+                </div>
             </div>
         }
         if (surveyStatus === 'search') {
             return <div>
-                <div>Title - {surveyParams.title}</div>
-                <div>Publisher - {survey.publisherName}</div>
-                <div>Date Published - {datePublishedRead}</div>
-                <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} mAlgos</div>
-                <div>Reserve - {surveyParams.reserved} mAlgos</div>
-                <div>Completions - {survey.responses.length}</div>
+                <div className={styles.header}>
+                    <div><i>Title:</i> {surveyParams.title}</div>
+                    <div><i>Publisher:</i> {survey.publisherName}</div>
+                    <div><i>Date Published:</i> {datePublishedRead}</div>
+                </div>
+                <div className={styles.desc}><i>Description:</i> {surveyParams.description}</div>
+                <div className={styles.meta}>
+                    <div><i>Payout:</i> {surveyParams.payout} mAlgos,   <i>Reserve:</i> {surveyParams.reserved} mAlgos</div>
+                    <div><i>Completions:</i> {survey.responses.length}</div>
+                </div>
             </div>
         }
     }

@@ -1,0 +1,13 @@
+/*https://www.w3schools.com/html/html_table_borders.asp*/
+table, th, td {
+    border: 1px solid grey;
+    border-collapse: collapse;
+}
+
+td {
+    overflow: scroll;
+    text-align: center;
+    padding-inline: 6px;
+    max-width: 100px;
+    color:cornflowerblue;
+}

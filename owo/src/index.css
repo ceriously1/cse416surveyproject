@@ -24,6 +24,15 @@ h1 {
   font-weight:lighter;
 }
 
+button {
+  color:cadetblue;
+  background-color: white;
+  margin: 0;
+  margin-inline: 4px;
+  margin-block: 4px;
+  font-family: monospace;
+}
+
 :root {
   --black-3: 
 rgba(0, 0, 0, 0.251);

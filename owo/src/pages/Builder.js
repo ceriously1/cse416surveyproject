@@ -313,11 +313,13 @@ function Builder() {
     return <div>
         <h1>Survey Builder</h1>
         <div className={globalStyles.shift}>
-            <div>Survey Title: {surveyParams.title}</div>
-            <div>Description: {surveyParams.description}</div>
-            <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>
-            <div>Payout: {surveyParams.payout} microAlgos</div>
-            <div>Reserve: {surveyParams.reserved} microAlgos</div>
+            <div className={globalStyles.header}>Survey Title: {surveyParams.title}</div>
+            <div className={globalStyles.desc}>Description: {surveyParams.description}</div>
+            <div className={globalStyles.meta}>
+                <div>Tags: {(surveyParams.tags.length < 1) ? 'None' : surveyParams.tags}</div>
+                <div>Payout: {surveyParams.payout} mAlgos</div>
+                <div>Reserve: {surveyParams.reserved} mAlgos</div>
+            </div>
             <div><Survey model={survey}/></div>
             <div>
                 <button onClick={() => {survey.prevPage()}}>Prev Page</button>
