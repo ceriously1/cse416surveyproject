@@ -183,16 +183,87 @@ router.post('/progress/delete/:survey_id', (req, res) => {
         });
 });
 
+// populating:
+// https://mongoosejs.com/docs/populate.html
+// https://stackoverflow.com/questions/36996384/how-to-populate-nested-entities-in-mongoose
+// https://stackoverflow.com/questions/33160536/mongoose-variable-sort
+
+const surveysPerPage = 10;
+// user -> responses -> surveys meeting conditions
+// in-progress conditions: response.complete === false && survey.deactivated === false
+// history condition: inverse of in-progress condition
+router.get('/progress/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res) => {
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
+    const {surveyStatus, sortBy, pageIndex, order} = req.params;
+    let options = {path: 'responses', populate: {path: 'survey'}};
+    User.findOne({username: req.session.passport.user}).select('_id').populate(options).then(user => {
+        function isInProgress(response) {return response.complete === false && response.survey.deactivated === false};
+        const orderNum = order === 'increasing' ? 1 : -1;
+        function compareResponses(r1, r2) {
+            if (sortBy === 'title') return orderNum*(r1.survey.surveyParams.title > r2.survey.surveyParams.title ? 1 : -1);
+            if (sortBy === 'date_published') return orderNum*(new Date(r1.survey.date_published) - new Date(r2.survey.date_published));
+            if (sortBy === 'completions') return orderNum*(r1.survey.responses.length - r2.survey.responses.length);
+            if (sortBy === 'payout') return orderNum*(r1.survey.surveyParams.payout - r2.survey.surveyParams.payout);
+            if (sortBy === 'reserved') return orderNum*(r1.survey.surveyParams.reserved - r2.survey.surveyParams.reserved);
+            return orderNum*(new Date(r1.last_modified) - new Date(r2.last_modified));
+        }
+        const surveysMatched = user.responses.filter(response => surveyStatus === 'in-progress' ? isInProgress(response) : !isInProgress(response));
+        const totalNumSurveys = surveysMatched.length;
+        let actualPageIndex = parseInt(pageIndex);
+        if ((actualPageIndex+1)*surveysPerPage > totalNumSurveys) actualPageIndex = parseInt((totalNumSurveys-1)/surveysPerPage); 
+        if (actualPageIndex*surveysPerPage < 0) actualPageIndex = 0;
+        return res.status(200).json({
+            surveys: surveysMatched
+                .sort((r1, r2) => compareResponses(r1,r2))
+                .slice(actualPageIndex*surveysPerPage, (actualPageIndex+1)*surveysPerPage)
+                .map(response => response.survey),
+            totalNumSurveys: totalNumSurveys,
+            actualPageIndex: actualPageIndex
+        });
+    }).catch(error =>{console.log(error); return res.status(500).json({message: error});});
+});
+
+// user -> surveys created (matching condition)
+// active: published, not deactivated
+// inactive: published, deactivated
+// building: published, not deactivated
+router.get('/published/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res) => {
+    if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
+    const {surveyStatus, sortBy, pageIndex, order} = req.params;
+    let options = {path: 'surveys_created'};
+    if (surveyStatus === 'active') options.match = {published: {$eq: true}, deactivated: {$eq: false}};
+    if (surveyStatus === 'inactive') options.match = {published: {$eq: true}, deactivated: {$eq: true}};
+    if (surveyStatus === 'building') options.match = {published: {$eq: false}, deactivated: {$eq: false}};
+    User.findOne({username: req.session.passport.user}).select('_id').populate(options).then(user => {
+        const orderNum = order === 'increasing' ? 1 : -1;
+        function compareSurveys(s1, s2) {
+            if (sortBy === 'title') return orderNum*(s1.surveyParams.title > s2.surveyParams.title ? 1 : -1);
+            if (sortBy === 'date_published') return orderNum*(new Date(s1.date_published) - new Date(s2.date_published));
+            if (sortBy === 'completions') return orderNum*(s1.responses.length - s2.responses.length);
+            if (sortBy === 'payout') return orderNum*(s1.surveyParams.payout - s2.surveyParams.payout);
+            if (sortBy === 'reserved') return orderNum*(s1.surveyParams.reserved - s2.surveyParams.reserved);
+            return orderNum*(new Date(s1.last_modified) - new Date(s2.last_modified));
+        }
+        const totalNumSurveys = user.surveys_created.length;
+        let actualPageIndex = parseInt(pageIndex);
+        if ((actualPageIndex+1)*surveysPerPage > totalNumSurveys) actualPageIndex = parseInt((totalNumSurveys-1)/surveysPerPage); 
+        if (actualPageIndex*surveysPerPage < 0) actualPageIndex = 0;
+        return res.status(200).json({
+            surveys: user.surveys_created
+                .sort((s1, s2) => compareSurveys(s1,s2))
+                .slice(actualPageIndex*surveysPerPage, (actualPageIndex+1)*surveysPerPage),
+            totalNumSurveys: totalNumSurveys,
+            actualPageIndex: actualPageIndex
+        });
+    }).catch(error =>{console.log(error); return res.status(500).json({message: error});});
+});
+
 // generic survey list acquiring thing
 // sorting should be done on front end because we're giving them everything
-router.get('/list/:survey_status', (req, res) => {
+router.get('/list/:surveyStatus/:sortBy/:pageIndex', (req, res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
-    const surveyStatus = req.params.survey_status;
-    // 'Query conditions and other options': https://mongoosejs.com/docs/populate.html
-    let options = {
-        path: '',
-        match: {}
-    };
+    const {surveyStatus, sortBy, pageIndex} = req.params;
+    let options = {path: '', match: {}};
     if (surveyStatus === 'active') {
         options.path = 'surveys_created';
         options.match = {published: {$eq: true}, deactivated: {$eq: false}};

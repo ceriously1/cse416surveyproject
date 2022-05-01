@@ -4,20 +4,23 @@ import SurveyList from '../components/surveylist/SurveyList.js';
 
 function Published() {
     const navigate = useNavigate();
+    // to give a response to the user when waiting for server response
     const [isLoading, setIsLoading] = useState(true);
-    // surveyStatus determines which kind of survey is displayed
-    const [surveyStatus, setSurveyStatus] = useState('active');
+    // type and storage of surveys
+    const [surveyStatus, setSurveyStatus] = useState('in-progress');
     const [surveys, setSurveys] = useState([]);
-    // the purpose of toggle is to have a way of refreshing the surveys whenever we want
+    // for refreshing
     const [toggle, setToggle] = useState(false);
+    // for pagination
+    const [pageIndex, setPageIndex] = useState(0);
+    const [totalNumSurveys, setTotalNumSurveys] = useState(0);
+    const surveysPerPage = 10;
+    // for sorting
+    const [sortBy, setSortBy] = useState('last_modified');
+    const [order, setOrder] = useState('decreasing');
 
     useEffect(() => {
-        // active = published: true, deactivated: false; inactive = published: true, deactivated: true; in-progress = published: false, deactivated: false
-        // for an active survey, you should be able to view and deactivate the survey and view answers
-        // for an inactive survey, you can view the survey and answers
-        // for an building survey, you can continue building or activate the survey
-        // a survey element should have the surveyParams and _id
-        fetch(`http://localhost:4000/survey/list/${surveyStatus}`,
+        fetch(`http://localhost:4000/survey/published/list/${surveyStatus}/${sortBy}/${pageIndex}/${order}`,
         {
             method: 'Get',
             credentials: 'include'
@@ -31,28 +34,67 @@ function Published() {
                 alert(data.message);
                 return;
             }
+            console.log(data);
             setIsLoading(false);
             setSurveys(data.surveys);
+            setTotalNumSurveys(data.totalNumSurveys);
+            setPageIndex(data.actualPageIndex);
         }) 
-    }, [surveyStatus, toggle, navigate]);
+    }, [surveyStatus, toggle, navigate, pageIndex, sortBy, order]);
 
-    if (isLoading) return <div>Surveys Published Loading</div>;
+    if (isLoading || typeof surveys === 'undefined') return <div>Survey Progress Page Loading</div>;
 
-    if (typeof surveys === 'undefined') {
-        return <div>Relog</div>;
+    function sortSelectElement() {
+        // https://stackoverflow.com/questions/28868071/onchange-event-using-react-js-for-drop-down
+        return <div>
+            Sort by
+            <select onChange={e => {setSortBy(e.target.value); setPageIndex(0);}}>
+                <option value='last_modified'>Last Modified</option>
+                <option value='date_published'>Date Published</option>
+                <option value='completions'>Completions</option>
+                <option value='title'>Title</option>
+                <option value='payout'>Payout</option>
+                <option value='reserved'>Reserved</option>
+            </select>
+            <select onChange={e => {setOrder(e.target.value); setPageIndex(0);}}>
+                <option value='decreasing'>Decreasing</option>
+                <option value='increasing'>Increasing</option>
+            </select>
+        </div>
     }
 
+    function pageSwapElement() {
+        const displayPrev = (pageIndex > 0) && (surveys.length > 0);
+        const displayNext = ((pageIndex+1)*surveysPerPage < totalNumSurveys);
+        return <div>
+            <div>Viewing Page {pageIndex+1} of {parseInt((totalNumSurveys-1)/surveysPerPage)+1}</div>
+            {displayPrev ? <button onClick={() => {setPageIndex(pageIndex-1)}}>Previous Page</button>: null}
+            {displayNext ? <button onClick={() => {setPageIndex(pageIndex+1)}}>Next Page</button>: null}
+        </div>
+    }
 
+    function statusSwapElement() {
+        function statusSwap(status) {
+            if (surveyStatus != status) {
+                setSurveyStatus(status);
+                setPageIndex(0);
+                setIsLoading(true);
+            }
+        }
+        return <div>
+            <button onClick={() => {statusSwap('active')}}>Active Surveys</button>
+            <button onClick={() => {statusSwap('inactive')}}>Inactive Surveys</button>
+            <button onClick={() => {statusSwap('building')}}>Surveys Being Built</button>
+        </div>
+    }
 
     return <div>
         <h1>Surveys Published</h1>
         <div><button onClick={() => {navigate('/survey/builder/0')}}>Create New Survey</button></div>
-        <div>
-            <button onClick={() => {if (surveyStatus !== 'active') {setSurveyStatus('active'); setIsLoading(true);}}}>Active Surveys</button>
-            <button onClick={() => {if (surveyStatus !== 'inactive') {setSurveyStatus('inactive'); setIsLoading(true);}}}>Inactive Surveys</button>
-            <button onClick={() => {if (surveyStatus !== 'building') {setSurveyStatus('building'); setIsLoading(true);}}}>Surveys Being Built</button>
-        </div>
+        {statusSwapElement()}
+        {sortSelectElement()}
         <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
+        {pageSwapElement()}
     </div>;
 }
 

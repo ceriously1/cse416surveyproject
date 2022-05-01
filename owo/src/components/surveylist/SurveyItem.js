@@ -195,6 +195,10 @@ function SurveyItem(props) {
 
     function info() {
         // can use switch, but that doesn't really matter because there aren't particulary many variations of surveyStatus
+        const datePublished = new Date(survey.date_published);
+        const datePublishedRead = datePublished.toLocaleDateString() + ' - ' + datePublished.toLocaleTimeString();
+        const lastModified = new Date(survey.last_modified);
+        const lastModifiedRead = lastModified.toLocaleDateString() + ' - ' + lastModified.toLocaleTimeString();
         if (surveyStatus === 'active') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
@@ -203,6 +207,7 @@ function SurveyItem(props) {
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
+                <div>Date Published - {datePublishedRead}</div>
             </div>
         }
         if (surveyStatus === 'inactive') {
@@ -211,8 +216,8 @@ function SurveyItem(props) {
                 <div>Description - {surveyParams.description}</div>
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
+                <div>Date Published - {datePublishedRead}</div>
             </div>
         }
         if (surveyStatus === 'building') {
@@ -222,6 +227,7 @@ function SurveyItem(props) {
                 <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
+                <div>Last Modified - {lastModifiedRead}</div>
             </div>
         }
         if (surveyStatus === 'in-progress') {
@@ -233,6 +239,7 @@ function SurveyItem(props) {
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
+                <div>Date Published - {datePublishedRead}</div>
             </div>
         }
         if (surveyStatus === 'history') {
@@ -245,6 +252,7 @@ function SurveyItem(props) {
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
+                <div>Date Published - {datePublishedRead}</div>
             </div>
         }
         if (surveyStatus === 'search') {
