@@ -195,13 +195,14 @@ const surveysPerPage = 10;
 router.get('/progress/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const {surveyStatus, sortBy, pageIndex, order} = req.params;
-    let options = {path: 'responses', populate: {path: 'survey'}};
+    let options = {path: 'responses', populate: {path: 'survey', select: '-surveyJSON'}};
     User.findOne({username: req.session.passport.user}).select('_id').populate(options).then(user => {
         function isInProgress(response) {return response.complete === false && response.survey.deactivated === false};
         const orderNum = order === 'increasing' ? 1 : -1;
         function compareResponses(r1, r2) {
             if (sortBy === 'title') return orderNum*(r1.survey.surveyParams.title > r2.survey.surveyParams.title ? 1 : -1);
             if (sortBy === 'date_published') return orderNum*(new Date(r1.survey.date_published) - new Date(r2.survey.date_published));
+            if (sortBy === 'date_deactivated') return orderNum*(new Date(r1.survey.date_deactivated) - new Date(r2.survey.date_deactivated));
             if (sortBy === 'date_completed') return orderNum*(new Date(r1.date_completed) - new Date(r2.date_completed));
             if (sortBy === 'completions') return orderNum*(r1.survey.responses.length - r2.survey.responses.length);
             if (sortBy === 'payout') return orderNum*(r1.survey.surveyParams.payout - r2.survey.surveyParams.payout);
@@ -230,7 +231,7 @@ router.get('/progress/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res) 
 router.get('/published/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res) => {
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
     const {surveyStatus, sortBy, pageIndex, order} = req.params;
-    let options = {path: 'surveys_created'};
+    let options = {path: 'surveys_created', select: '-surveyJSON'};
     if (surveyStatus === 'active') options.match = {published: {$eq: true}, deactivated: {$eq: false}};
     if (surveyStatus === 'inactive') options.match = {published: {$eq: true}, deactivated: {$eq: true}};
     if (surveyStatus === 'building') options.match = {published: {$eq: false}, deactivated: {$eq: false}};
@@ -262,29 +263,22 @@ router.get('/published/list/:surveyStatus/:sortBy/:pageIndex/:order', (req, res)
 // https://stackoverflow.com/questions/26814456/how-to-get-all-the-values-that-contains-part-of-a-string-using-mongoose-find
 // getting the search list based on query
 // consider adding sorting, categories here
-router.get('/search/:query?', (req, res) => {
-    if (typeof req.params.query === 'undefined') {
-        Survey.find({$and:[{'published':true}, {'deactivated':false}]})
-        .sort({'_id': -1}).limit(20).exec().then(surveys => {
-            return res.status(201).json({message: 'Surveys found.', surveys:surveys});
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                error: err
+router.get('/search/:sortBy/:pageIndex/:order/:query?', (req, res) => {
+    let {query, sortBy, pageIndex, order} = req.params;
+    if (typeof query === 'undefined') query = '';
+    // https://stackoverflow.com/questions/13272824/combine-two-or-queries-with-and-in-mongoose
+    Survey.find({$and:[{$or:[{'surveyParams.title':{'$regex':query,'$options':'i'}}, {'surveyParams.description':{'$regex':query,'$options':'i'}}]}, {'published':true}, {'deactivated':false}]})
+        .select('-surveyJSON').sort({'date_published': -1}).exec().then(surveys => {
+            const totalNumSurveys = surveys.length;
+            let actualPageIndex = parseInt(pageIndex);
+            if ((actualPageIndex+1)*surveysPerPage > totalNumSurveys) actualPageIndex = parseInt((totalNumSurveys-1)/surveysPerPage); 
+            if (actualPageIndex*surveysPerPage < 0) actualPageIndex = 0;
+            return res.status(200).json({message: 'Surveys found.', surveys: surveys
+                .slice(actualPageIndex*surveysPerPage, (actualPageIndex+1)*surveysPerPage),
+                totalNumSurveys: totalNumSurveys,
+                actualPageIndex: actualPageIndex
             });
-        });
-    } else {
-        // https://stackoverflow.com/questions/13272824/combine-two-or-queries-with-and-in-mongoose
-        Survey.find({$and:[{$or:[{'surveyParams.title':{'$regex':req.params.query,'$options':'i'}}, {'surveyParams.description':{'$regex':req.params.query,'$options':'i'}}]}, {'published':true}, {'deactivated':false}]})
-        .sort({'date_published': -1}).limit(20).exec().then(surveys => {
-                return res.status(201).json({message: 'Surveys found.', surveys:surveys});
-            }).catch(err =>{
-                console.log(err);
-                res.status(500).json({
-                    error: err
-                });
-            });
-    }
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
 
 // for safely activating a survey

@@ -265,8 +265,8 @@ function SurveyItem(props) {
             return <div>
                 <div>Title - {surveyParams.title}</div>
                 <div>Publisher - {survey.publisherName}</div>
+                <div>Date Published - {datePublishedRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Tags - {tags}</div>
                 <div>Payout - {surveyParams.payout} microAlgos</div>
                 <div>Reserve - {surveyParams.reserved} microAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
