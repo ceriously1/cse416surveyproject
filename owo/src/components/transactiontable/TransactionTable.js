@@ -28,7 +28,7 @@ function TransactionTable(props) {
     }
 
     return <div>
-        Transaction Table:
+        <div className='pad'>Transaction Table:</div>
         {(props.transactions.length < 1) ? <div>No transactions.</div> : null}
         <table>
             <tbody>

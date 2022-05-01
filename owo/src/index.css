@@ -33,6 +33,11 @@ button {
   font-family: monospace;
 }
 
+.pad {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
 :root {
   --black-3: 
 rgba(0, 0, 0, 0.251);

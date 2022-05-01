@@ -1,5 +1,6 @@
 /* https://stackoverflow.com/questions/114543/how-to-horizontal */
 .shift {
+    display: block;
     width:50%;
     margin: 0 auto;
 }

@@ -70,7 +70,7 @@ function Progress() {
         const displayPrev = (pageIndex > 0) && (surveys.length > 0);
         const displayNext = ((pageIndex+1)*surveysPerPage < totalNumSurveys);
         return <div>
-            <div>Viewing Page {pageIndex+1} of {parseInt((totalNumSurveys-1)/surveysPerPage)+1}</div>
+            <div className='pad'>Viewing Page {pageIndex+1} of {parseInt((totalNumSurveys-1)/surveysPerPage)+1}</div>
             {displayPrev ? <button onClick={() => {setPageIndex(pageIndex-1)}}>Previous Page</button>: null}
             {displayNext ? <button onClick={() => {setPageIndex(pageIndex+1)}}>Next Page</button>: null}
         </div>

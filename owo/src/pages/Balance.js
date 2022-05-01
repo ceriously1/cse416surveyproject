@@ -153,7 +153,7 @@ function Balance() {
         const displayPrev = (pageIndex > 0) && (transactions.length > 0);
         const displayNext = ((pageIndex+1)*transactionsPerPage < totalNumTransactions);
         return <div>
-            <div>Viewing Page {pageIndex+1} of {parseInt((totalNumTransactions-1)/transactionsPerPage)+1}</div>
+            <div className='pad'>Viewing Page {pageIndex+1} of {parseInt((totalNumTransactions-1)/transactionsPerPage)+1}</div>
             {displayPrev ? <button onClick={() => {setPageIndex(pageIndex-1)}}>Previous Page</button>: null}
             {displayNext ? <button onClick={() => {setPageIndex(pageIndex+1)}}>Next Page</button>: null}
         </div>
