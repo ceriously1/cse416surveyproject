@@ -1,6 +1,8 @@
 import {useState, useEffect, useRef} from 'react';
 import SurveyList from '../components/surveylist/SurveyList.js';
 
+import globalStyles from './global.module.css';
+
 function Search() {
     const [query, setQuery] = useState('');
     const queryRef = useRef();
@@ -75,10 +77,13 @@ function Search() {
     }
 
     return <div>
-        {searchElement()}
-        {sortSelectElement()}
-        <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
-        {pageSwapElement()}
+        <h1>Search</h1>
+        <div className={globalStyles.shift}> 
+            {searchElement()}
+            {sortSelectElement()}
+            <SurveyList surveys={surveys} surveyStatus={surveyStatus} toggle={toggle} setToggle={setToggle}/>
+            {pageSwapElement()}
+        </div>
     </div>
 }
 

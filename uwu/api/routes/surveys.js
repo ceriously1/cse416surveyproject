@@ -6,7 +6,6 @@ const router = require('express').Router();
 const mongoose = require('mongoose');
 const surveyjs = require('survey-react-ui');
 const _ = require('lodash');
-const user = require('../models/user.js');
 
 // getting survey build information to pass to builder page
 router.get('/builder/:survey_id', (req,res) => {
@@ -31,12 +30,7 @@ router.get('/builder/:survey_id', (req,res) => {
                     return res.status(401).json({message: 'User cannot access survey.'});
                 }
             } 
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
-        });
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
 
 // Updating the build of the survey or creating a new one if necessary
@@ -65,7 +59,7 @@ router.post('/builder/:survey_id', (req,res) => {
                     surveyParams: req.body.surveyParams,
                     last_modified: new Date().toISOString()
                 });
-                // consider moving save() to a m_session
+                // consider moving save() to a m_session; It's possible to create a floating "build" survey (not a critical error. Akin to memory leak)
                 survey.save().then(() => {
                     user.surveys_created.push(survey._id);
                     user.save().then(() => {
@@ -82,7 +76,6 @@ router.post('/builder/:survey_id', (req,res) => {
                             survey.last_modified = new Date().toISOString();
                             survey.surveyJSON = req.body.surveyJSON;
                             survey.surveyParams =req.body.surveyParams;
-                            // no need to move save() to a m_session
                             survey.save().then(result => {
                                 return res.status(200).json({success: true, message: 'Survey updated.', survey_id:req.params.survey_id});
                             });
@@ -95,92 +88,89 @@ router.post('/builder/:survey_id', (req,res) => {
                     return res.status(401).json({success: false, message: 'User cannot access survey.', survey_id:req.params.survey_id});
                 }
             }
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
+
+
+async function deleteBuild(username, survey_id) {
+    let success = false;
+    let err = '';
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const user = await User.findOne({username: username}).session(session);
+        const index = user.surveys_created.indexOf(survey_id);
+        if (index < 0) throw ('Survey not created by user.');
+        user.surveys_created.splice(index, 1);
+        await user.save();
+        const survey = await Survey.findById(survey_id).select('published deactivated').session(session);
+        if (survey.published || survey.deactivated) throw ('Survey not being built.');
+        await Survey.findByIdAndDelete(survey_id).session(session);
+        await session.commitTransaction();
+        success = true
+    } catch (error) {
+        await session.abortTransaction();
+        err = error;
+    } finally {
+        session.endSession();
+        return [success, err];
+    }
+}
 
 // note that the route is called published, but this route includes the list for surveys being built
 // this is supposed to delete the survey with the given id
+// only works on "build" surveys
 router.post('/published/delete/:survey_id', (req, res) => {
     if (!req.user) return res.status(401).json({success: false, message: 'Please log in.'});
-    const username = req.session.passport.user;
-    User.findOne({username: username})
-        .exec()
-        .then(user => {
-            if (!user) return res.status(404).json({success: false, message: 'User not found.'});
-            const index = user.surveys_created.indexOf(req.params.survey_id);
-            if (index > -1) {
-                Survey.findById(req.params.survey_id)
-                    .select('published deactivated')
-                    .exec()
-                    .then(survey => {
-                        if (!survey) return res.status(404).json({success: false, message: 'Survey not found.'});
-                        if (survey.published === false && survey.deactivated === false) {
-                            // consider moving to m_session
-                            Survey.findByIdAndDelete(survey._id)
-                                .exec().then(() => {
-                                    // removing survey from user's created (not necessarily published) list
-                                    // note that there is no need to delete responses because we can only delete surveys being built
-                                    user.surveys_created.splice(index, 1);
-                                    user.save().then(() => {
-                                        return res.status(201).json({success: true, message: 'Survey deleted.'});
-                                    });
-                                });
-                        } else {
-                            return res.status(401).json({success: false, message: 'Can only delete survey being built.'});
-                        }
-                    });
-            } else {
-                return res.status(401).json({success: false, message: 'Not allowed to delete the survey.'});
-            }
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
+    deleteBuild(req.session.passport.user, req.params.survey_id).then(results => {
+        const [success, error] = results;
+        if (success) return res.status(200).json({success: true, message: 'Survey deleted.'});
+        return res.status(500).json({success: false, message: error});
+    }).catch(error => {console.log(error); return res.status(500).json({success: false, message: error});});
 });
+
+async function deleteResponse(user_id, survey_id) {
+    let success = false;
+    let responseCompleted = false;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const response = await Response.findOne({$and:[{survey: survey_id}, {user: user_id}]}).select('complete').session(session);
+        if (!response.complete) await Response.findByIdAndDelete(response.id).session(session);
+        else {
+            responseCompleted = true;
+            throw 'Completed response cannot be deleted.';
+        }
+        const user = await User.findById(user_id).session(session);
+        // https://stackoverflow.com/questions/5767325/how-can-i-remove-a-specific-item-from-an-array
+        const index = user.responses.indexOf(response._id);
+        if (index > -1) user.responses.splice(index,1);
+        await user.save();
+        await session.commitTransaction();
+        success = true
+    } catch (error) {
+        await session.abortTransaction();
+        console.log(error);
+    } finally {
+        session.endSession();
+        return [success, responseCompleted];
+    }
+}
 
 // deleting response as long as it's not completed
 router.post('/progress/delete/:survey_id', (req, res) => {
     if (!req.user) return res.status(401).json({success: false, message: 'Please log in.'});
     const username = req.session.passport.user;
-    User.findOne({username: username})
-        .exec()
+    User.findOne({username: username}).select('').exec()
         .then(user => {
             if (!user) return res.status(404).json({success: false, message: 'User not found.'});
-            Response.findOne({$and:[{survey: req.params.survey_id}, {user: user._id}]})
-                .select('complete')
-                .exec()
-                .then(response => {
-                    if (!response) return res.status(404).json({success: false, message: 'Response not found.'});
-                    if (response.complete) return res.status(400).json({success: false, message: 'Cannot delete completed response.'});
-                    // move to session eventually
-                    // https://stackoverflow.com/questions/5767325/how-can-i-remove-a-specific-item-from-an-array
-                    const index = user.responses.indexOf(response._id);
-                    if (index > -1) {
-                        user.responses.splice(index,1);
-                    }
-                    // consider moving to m_session
-                    user.save().then(() => {
-                        Response.findByIdAndDelete(response._id).then(() => {
-                            return res.status(200).json({success: true, message: 'Response eliminated.'});
-                        });
-                    });
-                });
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
+            deleteResponse(user._id, req.params.survey_id).then(results => {
+                const [success, responseCompleted] = results;
+                if (responseCompleted) return res.status(400).json({success: false, message: 'Cannot delete completed response.'});
+                if (success) return res.status(200).json({success: true, message: 'Response eliminated.'});
+                return res.status(500).json({success: false, message: 'Server error.'});
             });
-        });
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
 
 // populating:
@@ -317,7 +307,6 @@ async function transact_activate(user_id, survey_id) {
         transacted = true;
     } catch (error) {
         await session.abortTransaction();
-        throw error;
     } finally {
         session.endSession();
         return [transacted, no_balance];
@@ -355,7 +344,6 @@ async function transact_deactivate(user_id, survey_id) {
         transacted = true;
     } catch (error) {
         await session.abortTransaction();
-        throw error;
     } finally {
         session.endSession();
         return transacted;
@@ -389,13 +377,7 @@ router.post('/activate/:survey_id', (req, res) => {
                     });
                 }
             });
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
 
 // for safely funding an active survey
@@ -435,7 +417,6 @@ async function transact_fund(user_id, survey_id, amount) {
         transacted = true;
     } catch (error) {
         await session.abortTransaction();
-        throw error;
     } finally {
         session.endSession();
         return [transacted, no_balance, active];
@@ -489,13 +470,7 @@ router.get('/taker/:survey_id', (req, res) => {
                             return res.status(200).json({success: true, surveyJSON: survey.surveyJSON, surveyParams: survey.surveyParams, surveyData: response.surveyData});
                         });
                 });
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
 
 // practically a duplicate of the above route, but with slightly different conditions
@@ -519,13 +494,7 @@ router.get('/view/:survey_id', (req, res) => {
                             return res.status(200).json({success: true, surveyJSON: survey.surveyJSON, surveyParams: survey.surveyParams, surveyData: response.surveyData});
                         });
                 });
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
 
 async function transact_completing(survey_id, user_id, response_id) {
@@ -564,8 +533,6 @@ async function transact_completing(survey_id, user_id, response_id) {
         transacted = true;
     } catch (error) {
         await session.abortTransaction();
-        //console.error(error);
-        throw error;
     } finally {
         session.endSession();
         // create another function with response.complete = true; and the survey push to another async func if you want to complete even if there is no
@@ -617,6 +584,7 @@ router.post('/taker/:survey_id', (req,res) => {
                                     complete: false,
                                     last_modified: new Date().toISOString()
                                 });
+                                // consider moving to m_session; error not critical, hanging response possible
                                 new_response.save().then(() => {
                                     user.responses.push(new_response._id);
                                     user.save().then(() => {
@@ -650,13 +618,7 @@ router.post('/taker/:survey_id', (req,res) => {
                             });
                         });
                 });
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                message: err
-            });
-        });
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
 
 router.get('/download/:survey_id', (req, res) => {
@@ -678,13 +640,7 @@ router.get('/download/:survey_id', (req, res) => {
                     const surveyData = survey.responses.map(response => response.surveyData);
                     return res.status(200).json({success: true, surveyQuestions: surveyM.getAllQuestions(), surveyData: surveyData});
                 });
-        }).catch(err =>{
-            console.log(err);
-            res.status(500).json({
-                success: false,
-                error: err
-            });
-        });
+        }).catch(error => {console.log(error); return res.status(500).json({message: error});});
 });
 
 module.exports = router;

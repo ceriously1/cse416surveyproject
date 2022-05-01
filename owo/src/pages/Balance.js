@@ -4,6 +4,8 @@ import { useState, useEffect, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
 import TransactionTable from '../components/transactiontable/TransactionTable.js';
 
+import globalStyles from './global.module.css';
+
 function Balance() {
     const navigate = useNavigate();
     // sets isLoading to "true"
@@ -158,17 +160,18 @@ function Balance() {
     }
 
     return (
-        <section>
+        <div>
             <h1>Balance</h1>
-            <p>Balance: {balance} mAlgos</p>
-            <div><button onClick={() => {setDepositing(!depositing)}}>Deposit</button></div>
-            <div>{depositing? depositElement() : null}</div>
-            <div></div>
-            <div><button onClick={() => {setWithdrawing(!withdrawing)}}>Withdraw</button></div>
-            <div>{withdrawing? withdrawElement() : null}</div>
-            <TransactionTable transactions={transactions}/>
-            {pageSwapElement()}
-        </section>
+            <div className={globalStyles.shift}>
+                <div>Balance: {balance} mAlgos</div>
+                <div><button onClick={() => {setDepositing(!depositing)}}>Deposit</button></div>
+                <div>{depositing? depositElement() : null}</div>
+                <div><button onClick={() => {setWithdrawing(!withdrawing)}}>Withdraw</button></div>
+                <div>{withdrawing? withdrawElement() : null}</div>
+                <TransactionTable transactions={transactions}/>
+                {pageSwapElement()}
+            </div>
+        </div>
     );
 }
 
