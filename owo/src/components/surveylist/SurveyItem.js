@@ -203,15 +203,15 @@ function SurveyItem(props) {
         const lastModifiedRead = lastModified.toLocaleDateString() + ' - ' + lastModified.toLocaleTimeString();
         const rLastModified = new Date(survey.r_last_modified);
         const rLastModifiedRead = rLastModified.toLocaleDateString() + ' - ' + rLastModified.toLocaleTimeString();
-        const rDateCompleted = new Date(survey.r_date_modified);
+        const rDateCompleted = new Date(survey.r_date_completed);
         const rDateCompletedRead = rDateCompleted.toLocaleDateString() + ' - ' + rDateCompleted.toLocaleTimeString();
         if (surveyStatus === 'active') {
             return <div>
                 <div>Title - {surveyParams.title}</div>
                 <div>Date Published - {datePublishedRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserve - {surveyParams.reserved} microAlgos</div>
+                <div>Payout - {surveyParams.payout} mAlgos</div>
+                <div>Reserve - {surveyParams.reserved} mAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
             </div>
         }
@@ -221,7 +221,7 @@ function SurveyItem(props) {
                 <div>Date Published - {datePublishedRead}</div>
                 <div>Date Deactivated - {dateDeactivateRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} microAlgos</div>
+                <div>Payout - {surveyParams.payout} mAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
             </div>
         }
@@ -229,8 +229,8 @@ function SurveyItem(props) {
             return <div>
                 <div>Title - {surveyParams.title}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserve - {surveyParams.reserved} microAlgos</div>
+                <div>Payout - {surveyParams.payout} mAlgos</div>
+                <div>Reserve - {surveyParams.reserved} mAlgos</div>
                 <div>Last Modified - {lastModifiedRead}</div>
             </div>
         }
@@ -240,8 +240,8 @@ function SurveyItem(props) {
                 <div>Publisher - {survey.publisherName}</div>
                 <div>Date Published - {datePublishedRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserve - {surveyParams.reserved} microAlgos</div>
+                <div>Payout - {surveyParams.payout} mAlgos</div>
+                <div>Reserve - {surveyParams.reserved} mAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
                 <div>Last Modified - {rLastModifiedRead}</div>
             </div>
@@ -254,8 +254,8 @@ function SurveyItem(props) {
                 <div>Date Published - {datePublishedRead}</div>
                 <div>Date Deactivated - {dateDeactivateRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserve - {surveyParams.reserved} microAlgos</div>
+                <div>Payout - {surveyParams.payout} mAlgos</div>
+                <div>Reserve - {surveyParams.reserved} mAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
                 <div>Last Modified - {rLastModifiedRead}</div>
                 <div>Date Completed - {rDateCompletedRead}</div>
@@ -267,8 +267,8 @@ function SurveyItem(props) {
                 <div>Publisher - {survey.publisherName}</div>
                 <div>Date Published - {datePublishedRead}</div>
                 <div>Description - {surveyParams.description}</div>
-                <div>Payout - {surveyParams.payout} microAlgos</div>
-                <div>Reserve - {surveyParams.reserved} microAlgos</div>
+                <div>Payout - {surveyParams.payout} mAlgos</div>
+                <div>Reserve - {surveyParams.reserved} mAlgos</div>
                 <div>Completions - {survey.responses.length}</div>
             </div>
         }

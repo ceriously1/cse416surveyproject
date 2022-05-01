@@ -18,14 +18,17 @@ function Balance() {
     const mnemonicRef = useRef();
     const withdrawRef = useRef();
     const withdrawAddressRef = useRef();
-
+    // for pagination
+    const [pageIndex, setPageIndex] = useState(0);
+    const [totalNumTransactions, setTotalNumTransactions] = useState(0);
+    const transactionsPerPage = 10;
 
     // useEffect conditionally calls fetch so that it isn't called everytime a state is updated
     // the empty array at the end means that fetch will only be called when this page is first rendered
     // for other use cases, we can include "external variables" in the array to call useEffefct's function everytime the variables change
     // Gets balance and transaction history
     useEffect(() => {
-        fetch('http://localhost:4000/user/balance',
+        fetch(`http://localhost:4000/user/balance/${pageIndex}`,
             {
                 method: 'Get',
                 credentials: 'include'
@@ -45,8 +48,16 @@ function Balance() {
                 setBalance(data.balance);
                 setTransactions(data.transactions);
                 setWithdrawAddress(data.algo_address);
+                setTotalNumTransactions(data.totalNumTransactions);
+                setPageIndex(data.actualPageIndex);
             })
-    }, [navigate]);
+    }, [navigate, pageIndex]);
+
+    if (isLoading) {
+        return (
+            <div>Balance Page Loading</div>
+        );
+    }
 
     // returns the jsx element allowing users to select how much they want to deposit
     function depositElement() {
@@ -136,10 +147,14 @@ function Balance() {
         });
     }
 
-    if (isLoading) {
-        return (
-            <div>Balance Page Loading</div>
-        );
+    function pageSwapElement() {
+        const displayPrev = (pageIndex > 0) && (transactions.length > 0);
+        const displayNext = ((pageIndex+1)*transactionsPerPage < totalNumTransactions);
+        return <div>
+            <div>Viewing Page {pageIndex+1} of {parseInt((totalNumTransactions-1)/transactionsPerPage)+1}</div>
+            {displayPrev ? <button onClick={() => {setPageIndex(pageIndex-1)}}>Previous Page</button>: null}
+            {displayNext ? <button onClick={() => {setPageIndex(pageIndex+1)}}>Next Page</button>: null}
+        </div>
     }
 
     return (
@@ -152,6 +167,7 @@ function Balance() {
             <div><button onClick={() => {setWithdrawing(!withdrawing)}}>Withdraw</button></div>
             <div>{withdrawing? withdrawElement() : null}</div>
             <TransactionTable transactions={transactions}/>
+            {pageSwapElement()}
         </section>
     );
 }

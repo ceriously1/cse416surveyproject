@@ -58,25 +58,28 @@ router.get('/logged', (req, res) => {
 
 // handling GET request from /user/balance (displays balance, transaction history)
 // Note: you may get something like "websocket closed due to suspension", this is if you send a 304 I think
-router.get("/balance", (req, res, next) => {
+router.get("/balance/:pageIndex", (req, res, next) => {
+    const pageIndex = req.params.pageIndex;
+    const transactionsPerPage = 10;
     if (!req.user) return res.status(401).json({message: 'Please log in.', success: false});
         User.findOne({username: req.session.passport.user})
         .select('_id balance algo_address transactions')
-        .populate({
-            path:'transactions',
-            options: {
-                limit: 15,
-                sort: { time: -1},
-            }})
+        .populate({path:'transactions', options: {sort: { time: -1}}})
         .exec()
         .then(user => {
             if (!user) return res.status(404).json({success: false, message: 'User not found.'});
+            const totalNumTransactions = user.transactions.length;
+            let actualPageIndex = parseInt(pageIndex);
+            if ((actualPageIndex+1)*transactionsPerPage > totalNumTransactions) actualPageIndex = parseInt((totalNumTransactions-1)/transactionsPerPage); 
             res.status(200).json({
                 success: true,
                 message: "Balance and transaction history found.",
                 balance: user.balance,
                 algo_address: user.algo_address,
                 transactions: user.transactions
+                    .slice(actualPageIndex*transactionsPerPage, (actualPageIndex+1)*transactionsPerPage),
+                totalNumTransactions: totalNumTransactions,
+                actualPageIndex: actualPageIndex
             });
         }).catch(err => {
             console.log(err);
@@ -150,7 +153,6 @@ async function transact_deposit(user_id, username, mnemonic, amount) {
         await session.commitTransaction();
     } catch (error) {
         await session.abortTransaction();
-        throw error;
     } finally {
         session.endSession();
     }
@@ -246,7 +248,6 @@ async function transact_withdraw(user_id, username, address, amount) {
         await session.commitTransaction();
     } catch (error) {
         await session.abortTransaction();
-        throw error;
     } finally {
         session.endSession();
     }
