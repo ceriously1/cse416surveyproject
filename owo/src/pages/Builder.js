@@ -20,7 +20,7 @@ function Builder() {
 
     useEffect(() => {
         // setIsLoading(false); // comment this out when connected to db
-        fetch(`http://localhost:4000/survey/builder/${survey_id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/builder/${survey_id}`, 
         {
             method: 'Get', 
             credentials: 'include',
@@ -280,7 +280,7 @@ function Builder() {
         };
 
         // if survey_id is 0, we will create a new survey
-        fetch(`http://localhost:4000/survey/builder/${survey_id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/builder/${survey_id}`, 
             {
                 method: 'Post', 
                 headers: {'Content-Type': 'application/json'},

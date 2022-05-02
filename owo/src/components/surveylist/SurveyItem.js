@@ -17,7 +17,7 @@ function SurveyItem(props) {
 
     // activate/deactivate survey
     function activate(toggle) {
-        fetch(`http://localhost:4000/survey/activate/${survey._id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/activate/${survey._id}`, 
         {
             method: 'Post',
             headers: {'Content-Type': 'application/json'},
@@ -41,7 +41,7 @@ function SurveyItem(props) {
 
     // delete survey being built
     function deleteBuild() {
-        fetch(`http://localhost:4000/survey/published/delete/${survey._id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/published/delete/${survey._id}`, 
         {
             method: 'Post',
             credentials: 'include',
@@ -60,7 +60,7 @@ function SurveyItem(props) {
     // delete response which is not completed
     function deleteResponse() {
         // affects a User and a Response
-        fetch(`http://localhost:4000/survey/progress/delete/${survey._id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/progress/delete/${survey._id}`, 
         {
             method: 'Post',
             credentials: 'include',
@@ -78,7 +78,7 @@ function SurveyItem(props) {
 
     // download results based on type
     function download() {
-        fetch(`http://localhost:4000/survey/download/${survey._id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/download/${survey._id}`, 
         {
             method: 'Get',
             credentials: 'include',
@@ -133,7 +133,7 @@ function SurveyItem(props) {
             amount: fundingRef.current.value
         }
         console.log(amountJSON);
-        fetch(`http://localhost:4000/survey/fund/${survey._id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/fund/${survey._id}`, 
         {
             method: 'Post',
             headers: {'Content-Type': 'application/json'},

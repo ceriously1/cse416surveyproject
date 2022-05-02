@@ -22,7 +22,7 @@ function Published() {
     const [order, setOrder] = useState('decreasing');
 
     useEffect(() => {
-        fetch(`http://localhost:4000/survey/published/list/${surveyStatus}/${sortBy}/${pageIndex}/${order}`,
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/published/list/${surveyStatus}/${sortBy}/${pageIndex}/${order}`,
         {
             method: 'Get',
             credentials: 'include'

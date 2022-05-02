@@ -50,7 +50,7 @@ app.use(bodyParser.json());
 // gives client access (cors "cross-origin-resource-sharing")
 // https://stackoverflow.com/questions/46288437/set-cookies-for-cross-origin-requests
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.header('Access-Control-Allow-Origin', `${process.env.CLIENT_ADDR}`);
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     if (req.method === 'Options') {

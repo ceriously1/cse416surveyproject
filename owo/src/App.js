@@ -13,6 +13,8 @@ import View from './pages/View.js';
 
 import NavigationBar from './components/layout/NavigationBar.js';
 
+// https://stackoverflow.com/questions/54247104/node-react-after-installing-env-module-error-for-fs
+
 function App() {
   return (
     <div>

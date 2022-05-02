@@ -16,7 +16,7 @@ function Taker() {
     const [surveyData, setSurveyData] = useState({});
 
     useEffect(() => {
-        fetch(`http://localhost:4000/survey/taker/${survey_id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/taker/${survey_id}`, 
         {
             method: 'Get', 
             credentials: 'include',
@@ -56,7 +56,7 @@ function Taker() {
     survey.data = surveyData;
 
     survey.onComplete.add(()=> {
-        fetch(`http://localhost:4000/survey/taker/${survey_id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/taker/${survey_id}`, 
         {
             method: 'Post', 
             headers: {'Content-Type': 'application/json'},
@@ -80,7 +80,7 @@ function Taker() {
 
     function saveResponse() {
         // on the server side, you should retrieve the surveyJSON to and get the question types to verify that the answers are valid
-        fetch(`http://localhost:4000/survey/taker/${survey_id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/taker/${survey_id}`, 
         {
             method: 'Post', 
             headers: {'Content-Type': 'application/json'},

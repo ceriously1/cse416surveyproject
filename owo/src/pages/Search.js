@@ -20,7 +20,7 @@ function Search() {
     const [order, setOrder] = useState('decreasing');
 
     useEffect(() => {
-        fetch(`http://localhost:4000/survey/search/${sortBy}/${pageIndex}/${order}/${query}`,
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/search/${sortBy}/${pageIndex}/${order}/${query}`,
         {
             method: 'Get',
             credentials: 'include',

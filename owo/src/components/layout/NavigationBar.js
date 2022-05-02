@@ -6,8 +6,9 @@ function NavigationBar() {
     const navigate = useNavigate();
     const [logged, setLogged] = useState(false);
 
+    console.log(process.env.REACT_APP_SERVER_ADDR)
     function logout() {
-        fetch('http://localhost:4000/user/logout', 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/user/logout`, 
         {
             method: 'Post', 
             credentials: 'include',
@@ -25,7 +26,7 @@ function NavigationBar() {
     }
 
     useEffect(() => {
-        fetch('http://localhost:4000/user/logged', 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/user/logged`, 
         {
             method: 'Get', 
             credentials: 'include',

@@ -30,7 +30,7 @@ function Balance() {
     // for other use cases, we can include "external variables" in the array to call useEffefct's function everytime the variables change
     // Gets balance and transaction history
     useEffect(() => {
-        fetch(`http://localhost:4000/user/balance/${pageIndex}`,
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/user/balance/${pageIndex}`,
             {
                 method: 'Get',
                 credentials: 'include'
@@ -82,7 +82,7 @@ function Balance() {
     function deposit() {
         const amount = depositRef.current.value;
         const mnemonic = mnemonicRef.current.value;
-        fetch(`http://localhost:4000/user/deposit`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/user/deposit`, 
         {
             method: 'Post',
             headers: {'Content-Type': 'application/json'},
@@ -126,7 +126,7 @@ function Balance() {
     function withdraw() {
         const amount = withdrawRef.current.value;
         const address = withdrawAddressRef.current.value;
-        fetch(`http://localhost:4000/user/withdraw`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/user/withdraw`, 
         {
             method: 'Post',
             headers: {'Content-Type': 'application/json'},

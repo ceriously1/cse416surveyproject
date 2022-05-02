@@ -14,7 +14,7 @@ function View() {
     const [surveyData, setSurveyData] = useState({});
 
     useEffect(() => {   // this is so similar to the get for taking that I'll just reuse this route
-        fetch(`http://localhost:4000/survey/view/${survey_id}`, 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/view/${survey_id}`, 
         {
             method: 'Get', 
             credentials: 'include',

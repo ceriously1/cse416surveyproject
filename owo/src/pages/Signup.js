@@ -18,7 +18,7 @@ function SignUp() {
             email: emailRef.current.value
         }
 
-        fetch('http://localhost:4000/user/signup', 
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/user/signup`, 
             {
                 method: 'Post', 
                 headers: {'Content-Type': 'application/json'}, 
