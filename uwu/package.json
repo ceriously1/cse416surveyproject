@@ -31,5 +31,7 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
-  }
+  },
+  "homepage": ".",
+  "proxy": "https://cse416-347707.uk.r.appspot.com"
 }
