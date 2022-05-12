@@ -46,10 +46,9 @@ These are tasks I don't think anyone else has taken on yet. Not comprehensive.
 
 
 
-===========
+-----
+requires heroku cli installed
 to push changes /uwuw to heroku:
 git add .
 git commit -am "commit message"
 git push heroku main
-===========
-requires heroku cli installed
