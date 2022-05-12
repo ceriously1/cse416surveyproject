@@ -107,7 +107,8 @@ function Builder() {
         function cancel() {
             setAddingQuestion(false);
         }
-        return <div>
+        return <div className={globalStyles.shift}>
+            <h1>New Question</h1>
             <Survey model={qSurvey}/>
             <button onClick={() => {saveQuestion()}}>Save</button>
             <button onClick={() => {cancel()}}>Cancel</button>
@@ -171,7 +172,8 @@ function Builder() {
         function cancel() {
             setEditingSurveyParams(false);
         }
-        return <div>
+        return <div className={globalStyles.shift}>
+            <h1>Survey Parameters</h1>
             <Survey model={pSurvey}/>
             <button onClick={() => {saveParams()}}>Save</button>
             <button onClick={() => {cancel()}}>Cancel</button>

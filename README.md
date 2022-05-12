@@ -1,5 +1,10 @@
 # cse416surveyproject
 
+!!!!! TO RUN LOCALLY !!!!!
+npm run start:dev on /uwu
+nodemon start on /owo
+
+
 Followed the following sources extensively:
 https://www.youtube.com/watch?v=Dorf8i6lCuk&t=7488s
 https://www.youtube.com/playlist?list=PL55RiY5tL51q4D-B63KBnygU6opNPFk_q
