@@ -9,21 +9,15 @@ const LocalStrategy = require('passport-local').Strategy;
 const MongoStore = require('connect-mongo');
 // https://www.freecodecamp.org/news/heres-how-you-can-actually-use-node-environment-variables-8fdf98f53a0a/
 const dotenv = require('dotenv').config();
-const path = require('path');
-
 
 // requiring routes
 const userRoutes = require('./api/routes/users.js');
 const surveyRoutes = require('./api/routes/surveys.js');
 
-// send to homepage
-app.use(express.static("build"))
+// connecting to cloud db
 
-app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
-});
-
-
+//James: Moved connecting to server.js to ensure that the database is connected before trying to process requests
+//havent yet tested if this breaks anything in this file
 
 // https://dilshankelsen.com/user-authentication-with-passport-express/
 // using authentification middleware

@@ -11,9 +11,6 @@ Remember to npm install everything to get things working.
 Backend:
     checkAuth is deprecated. You can now do router('/path', (req, res) => {...}) without any middleware.
 
-For /uwu (server), build /owo client first (npm run build). Then, move the entire build folder into uwu. After that,
-npm start will work. Note for anything database related (login, sign up, etc.), HTTPS MUST BE USED. Regular http will not work.
-
 Eric Chan
 - Working on adding surveys
 - considering using smart contracts to send out payments (if someone could figure that out, that would be great)
