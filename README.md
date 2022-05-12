@@ -43,3 +43,13 @@ These are tasks I don't think anyone else has taken on yet. Not comprehensive.
 - Backend search functionality for finding new surveys by tag and name
 - Create the functions to enable data visualization
 - Function to export the data
+
+
+
+===========
+to push changes /uwuw to heroku:
+git add .
+git commit -am "commit message"
+git push heroku main
+===========
+requires heroku cli installed
