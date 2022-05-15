@@ -3,6 +3,7 @@ import {useState, useRef} from 'react';
 
 import styles from './SurveyItem.module.css';
 import './si.css';
+import PieChart from './PieChart';
 
 function SurveyItem(props) {
     const navigate = useNavigate();
@@ -295,9 +296,52 @@ function SurveyItem(props) {
         }
     }
     
+    function visualize() {
+        fetch(`${process.env.REACT_APP_SERVER_ADDR}/survey/download/${survey._id}`, 
+        {
+            method: 'Get',
+            credentials: 'include',
+        }
+        ).then(res => {
+            return res.json()
+        })
+        .then(response => {
+            if (response.message === 'Please log in.') {
+                navigate('/user/login',{state:'/survey/published'});
+                alert(response.message);
+                return;
+            }
+            if (!response.success) {
+                alert(response.message);
+                return;
+            }
+            const question_map = response.surveyQuestions;
+            const answers = response.surveyData;
+            if (answers[0] === null) {
+                return;
+            };
+            let dataArray = [];
+            for (let i = 0; i < question_map.length; i++) {
+                dataArray.push({});
+            }
+            for (let i = 0; i < answers.length; i++) {
+                for (let j = 0; j < question_map.length; j++) {
+                    const entry = answers[i][question_map[j].name];
+                    // group by unique response id
+                    dataArray[j][j] = Array.isArray(entry) ? entry.toString() : [entry].toString();
+                }
+            }
+            // visualize every possible question
+            return <div>
+                {dataArray.map(function(d,i) {return <PieChart data={d} title="Question ${i}"/>})}
+            </div>;
+        });
+    }
+
     return <div>
         {info()}
         {buttons()}
+        {visualize()}
         {isFunding ? (<div>
             <label htmlFor='funding'>Amount</label>
             <input type='number' min='0' required id='funding' ref={fundingRef}></input>
