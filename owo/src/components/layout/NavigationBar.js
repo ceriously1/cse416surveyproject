@@ -10,6 +10,10 @@ function NavigationBar() {
     function logout() {
         fetch(`${process.env.REACT_APP_SERVER_ADDR}/user/logout`, 
         {
+            headers : {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             method: 'Post', 
             credentials: 'include',
         }
